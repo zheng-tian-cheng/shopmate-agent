@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.log
+
+# Web prototype
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# 未授权的本地参考商品图：只在本地开发模式显示，不提交、不发布
+frontend/reference-images/
+
+# 竞品截图暂不公开（待确认截图中没有个人信息后再上传）
+docs/竞品截图/

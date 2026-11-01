@@ -1,0 +1,1282 @@
+{
+  "schemaVersion": 2,
+  "updatedAt": "2026-11-01",
+  "description": "ShopMate 正式展示用的真实蓝牙耳机数据（商品数据核验）。前端商品列表、详情页、助手推荐和比较都读取 products；reserve 是已核验但本期不展示的型号（价格超出本期价位分布），数据保留、不参与检索。第 2 阶段 FastAPI 也以此为准。每个非空字段都必须引用 sources 中的来源，数值要能在来源的 supports 中找到；查不到的字段为 null 或空数组（界面显示“未知”），不估算、不编造，不借用同系列其他型号的数据。priceType 照抄来源的价格口径（售价、定价、原价、建议零售价、首发到手价等）。battery 的 scope：single 单次（耳机或头戴式整机单次播放）、total 含充电盒、unspecified 来源未注明；anc：off 降噪关、on 降噪开、unspecified 未注明。weight 的 scope：earbud 单只耳机、total 整机、unspecified 未注明。ancSpec 是厂商或媒体给出的降噪深度标称值，不代表实际降噪效果。sources.title 只记录核对过的原文标题，未核对的为 null。商品图片的许可另见 product-images.json。",
+  "sources": {
+    "sony-cn-20230301": {
+      "title": "敞开听、放开练，索尼耳机新品引领时尚健康生活",
+      "publisher": "索尼（中国）新闻中心",
+      "kind": "official",
+      "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2023/20230301-1.html",
+      "publishedAt": "2023-03-01",
+      "accessedAt": "2026-11-01",
+      "supports": "WH-CH720N：头戴式、主动降噪、续航（降噪关约 50 小时／开约 30 小时）、重量约 192g"
+    },
+    "ithome-680852": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/680/852.htm",
+      "publishedAt": "2023-03-20",
+      "accessedAt": "2026-11-01",
+      "supports": "WH-CH720N：上架官网售价 799 元"
+    },
+    "sony-cn-240927": {
+      "title": "轻巧舒适 好听又好用——索尼新款真无线耳机WF-C510发布",
+      "publisher": "索尼（中国）新闻中心",
+      "kind": "official",
+      "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2024/240927.html",
+      "publishedAt": "2024-09-27",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-C510：被动降噪（无主动降噪）、耳塞贴合耳道、续航约 11 小时／含充电盒约 22 小时、约 4.6 克"
+    },
+    "ithome-798823": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/798/823.htm",
+      "publishedAt": "2024-09-27",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-C510：国行建议零售价 499 元"
+    },
+    "huawei-cn-freebuds6i-specs": {
+      "title": "HUAWEI FreeBuds 6i 规格参数",
+      "publisher": "华为官网（中国）",
+      "kind": "official",
+      "url": "https://consumer.huawei.com/cn/headphones/freebuds6i/specs/",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "FreeBuds 6i：主动降噪、续航（耳机降噪关 8／开 5 小时，整机 35／20 小时）、单只约 5.4g"
+    },
+    "ithome-786570": {
+      "title": "华为 FreeBuds 6i 及流光遐音版真无线耳机发布：27dB 降噪深度，售价 599 元起",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/786/570.htm",
+      "publishedAt": "2024-08-06",
+      "accessedAt": "2026-11-01",
+      "supports": "FreeBuds 6i：国内售价 599 元；标题写 27dB 降噪深度"
+    },
+    "huawei-cn-freebuds6i-page": {
+      "title": null,
+      "publisher": "华为官网（中国）",
+      "kind": "official",
+      "url": "https://consumer.huawei.com/cn/headphones/freebuds6i/",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "FreeBuds 6i：产品页标价“¥ 599* 起”；“亲肤硅胶耳塞……三种耳塞尺寸任你选择。佩戴更贴合、紧密”"
+    },
+    "ithome-798668": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/798/668.htm",
+      "publishedAt": "2024-09-26",
+      "accessedAt": "2026-11-01",
+      "supports": "Redmi Buds 6：售价 199 元、最高 49dB 降噪深度、至高续航 42 小时（未注明是否含充电盒）；提到耳机盒（充电盒）电量显示"
+    },
+    "ithome-821856": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/821/856.htm",
+      "publishedAt": "2025-01-02",
+      "accessedAt": "2026-11-01",
+      "supports": "Redmi Buds 6 Pro“潮流版”：售价 399 元、55dB 降噪深度"
+    },
+    "oppo-global-enco-air4-specs": {
+      "title": "OPPO Enco Air4 Specs - Active Noise Cancellation",
+      "publisher": "OPPO 官网（海外站）",
+      "kind": "official",
+      "url": "https://www.oppo.com/en/accessories/enco-air4/specs/",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "Enco Air4：主动降噪；AAC、默认设置、50% 音量、降噪关耳机 12 小时 / 含充电盒 43 小时，降噪或通透开 8 / 28 小时；单只 4.2g ± 0.1g；蓝牙 Bluetooth® 5.4"
+    },
+    "ithome-794422": {
+      "title": "OPPO Enco Air4 耳机开售：支持 ANC 主动降噪、空间音效，首发 159 元",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/794/422.htm",
+      "publishedAt": "2024-09-09",
+      "accessedAt": "2026-11-01",
+      "supports": "Enco Air4：原价 169 元，首销立减 10 元到手 159 元；采用 ANC 主动降噪"
+    },
+    "vivo-cn-tws4-param": {
+      "title": "vivo TWS 4-vivo智能手机官方网站",
+      "publisher": "vivo 官网（中国）",
+      "kind": "official",
+      "url": "https://www.vivo.com.cn/vivo/param/vivotws4",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "vivo TWS 4：产品形态入耳式；降噪深度至深 55dB；“11h/45h综合续航”；单耳约 4.8±0.3g；上市价格 399.00 元"
+    },
+    "ithome-758271": {
+      "title": "vivo TWS 4 系列耳机正式发布：陶瓷钨原声振膜、55dB 多模式深海降噪，399 元起",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/758/271.htm",
+      "publishedAt": "2024-03-26",
+      "accessedAt": "2026-11-01",
+      "supports": "vivo TWS 4：标准版 399 元，Hi-Fi 版 499 元"
+    },
+    "oneplus-us-buds3-specs": {
+      "title": "OnePlus Buds 3 Specs",
+      "publisher": "一加官网（美国站）",
+      "kind": "official",
+      "url": "https://www.oneplus.com/us/oneplus-buds-3/specs",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "OnePlus Buds 3：最高 49dB 自适应降噪；AAC、50% 音量降噪关耳机 10 小时 / 含充电盒 44 小时，降噪或通透开 6.5 / 28 小时；单只 4.8g；包装含硅胶耳塞 S/M/L"
+    },
+    "ithome-743374": {
+      "title": "一加 Buds 3 耳机发布：49dB 主动降噪、44 小时续航，首发价 449 元",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/743/374.htm",
+      "publishedAt": "2024-01-04",
+      "accessedAt": "2026-11-01",
+      "supports": "一加 Buds 3：零售价 499 元，首销立减 50 元到手 449 元；49dB 降噪"
+    },
+    "ithome-773833": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/773/833.htm",
+      "publishedAt": "2024-06-07",
+      "accessedAt": "2026-11-01",
+      "supports": "Redmi Buds 6S：售价 199 元；“其结构为半入耳式”；支持主动降噪、自适应降噪；耳机单次续航 7 小时，配合耳机盒 33 小时"
+    },
+    "ithome-775219": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/775/219.htm",
+      "publishedAt": "2024-06-14",
+      "accessedAt": "2026-11-01",
+      "supports": "Redmi Buds 6S：售价 199 元；半入耳设计；主动降噪；耳机单次 7 小时，配合耳机盒 33 小时"
+    },
+    "ithome-817020": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/817/020.htm",
+      "publishedAt": "2024-12-12",
+      "accessedAt": "2026-11-01",
+      "supports": "华为 FreeBuds SE 3：定价 199 元，全款预售优惠 20 元后到手价 179 元"
+    },
+    "ithome-818900": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/818/900.htm",
+      "publishedAt": "2024-12-20",
+      "accessedAt": "2026-11-01",
+      "supports": "华为 FreeBuds SE 3：定价 199 元、首发 179 元；单次播放 9 小时、综合续航 42 小时；单耳重约 3.8g；蓝牙 5.4；“耳机舱底部新增实体按键”"
+    },
+    "huawei-cn-freebuds-se3-specs": {
+      "title": null,
+      "publisher": "华为官网（中国）",
+      "kind": "official",
+      "url": "https://consumer.huawei.com/cn/headphones/freebuds-se-3/specs/",
+      "publishedAt": null,
+      "accessedAt": "2026-11-01",
+      "supports": "FreeBuds SE 3：音频技术只列“通话降噪/多 EQ”（未列主动降噪）；聆听音乐耳机单次充电 9 小时、配合充电盒 42 小时（默认设置、50% 音量、AAC 编码，华为实验室数据）；单耳机约 3.8 g，充电盒约 33 g；蓝牙 BT 5.4"
+    },
+    "ithome-770150": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/770/150.htm",
+      "publishedAt": "2024-05-23",
+      "accessedAt": "2026-11-01",
+      "supports": "OPPO Enco Air4 Pro：原价 299 元；降噪深度达 49dB；AAC 关闭 ANC 单次 12 小时、带充电盒 44 小时，开启 ANC 单次 5.5 小时、带充电盒 20 小时（LHDC：关闭 7.5 / 28 小时，开启 4.5 / 16 小时）；蓝牙 5.4"
+    },
+    "ithome-772117": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/772/117.htm",
+      "publishedAt": "2024-05-31",
+      "accessedAt": "2026-11-01",
+      "supports": "OPPO Enco Air4 Pro：官方原价 299 元、首发价 269 元；49dB 降噪深度；搭配充电盒 44 小时；单耳 4.4g；蓝牙 5.4"
+    },
+    "ithome-856702": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/856/702.htm",
+      "publishedAt": "2025-05-28",
+      "accessedAt": "2026-11-01",
+      "supports": "荣耀 Earbuds X9：入耳式；售价 299 元；49dB 主动降噪；42 小时长续航（未注明是否含充电盒）"
+    },
+    "ithome-767619": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/767/619.htm",
+      "publishedAt": "2024-05-13",
+      "accessedAt": "2026-11-01",
+      "supports": "漫步者 W800BT Free 降噪版：头戴式；首发到手价 269 元；44dB 主动降噪；续航长达 42 小时（开启降噪后为 25 小时）；重量约 253 克；蓝牙 5.4"
+    },
+    "ithome-960122": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/960/122.htm",
+      "publishedAt": "2026-06-04",
+      "accessedAt": "2026-11-01",
+      "supports": "惠威 AW-20 主动降噪真无线耳机：售价 269 元（券后到手价 241.55 元）；-25dB 深度主动降噪；降噪关：整机续航 22.5 小时、耳机约 5 小时；降噪开：15 小时、3.5 小时；蓝牙 6.0"
+    },
+    "ithome-947942": {
+      "title": null,
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/947/942.htm",
+      "publishedAt": "2026-05-08",
+      "accessedAt": "2026-11-01",
+      "supports": "QCY MeloBuds A30：定价 209 元；内置“天穹降噪架构 V8”（未写明主动降噪）；关闭降噪单次至高 11 小时、搭配充电盒至高 50 小时；耳机本体重量 4.5g"
+    },
+    "sony-cn-20230727": {
+      "title": "索尼降噪豆，降噪真无限 ——索尼双芯降噪旗舰真无线耳机WF-1000XM5重磅亮相",
+      "publisher": "索尼（中国）新闻中心",
+      "kind": "official",
+      "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2023/20230727-1.html",
+      "publishedAt": "2023-07-27",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-1000XM5：双芯降噪；开启降噪耳机约 8 小时、配合充电盒约 24 小时，关闭降噪配合充电盒约 36 小时；重量仅写“减少约20%”"
+    },
+    "ithome-708519": {
+      "title": "1999 元，索尼降噪豆 WF-1000XM5 耳机国行发布：外观、配置全面升级",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/708/519.htm",
+      "publishedAt": "2023-07-27",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-1000XM5：国行版正式发布，售价 1999 元"
+    },
+    "sony-cn-20210615": {
+      "title": "优秀与“声”俱来， 索尼再创真无线新标杆",
+      "publisher": "索尼（中国）新闻中心",
+      "kind": "official",
+      "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2021/2021-06-15-1.html",
+      "publishedAt": "2021-06-15",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-1000XM4：主动降噪、降噪耳塞；开启降噪单次约 8 小时、总续航约 24 小时，关闭降噪约 36 小时；单个耳机约 7.3 克"
+    },
+    "ithome-556321": {
+      "title": "1999 元，索尼 WF-1000XM4 降噪豆国行正式发布：搭载 V1 芯片，充电盒缩小 40%",
+      "publisher": "IT之家",
+      "kind": "media",
+      "url": "https://www.ithome.com/0/556/321.htm",
+      "publishedAt": "2021-06-09",
+      "accessedAt": "2026-11-01",
+      "supports": "WF-1000XM4：国行正式发布，售价 1999 元"
+    }
+  },
+  "products": [
+    {
+      "id": "oppo-enco-air4",
+      "brand": "OPPO",
+      "model": "Enco Air4",
+      "displayName": "OPPO Enco Air4",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": null,
+      "priceCny": 169,
+      "priceType": "原价",
+      "priceConditions": "原价 169 元；首销立减 10 元后 159 元（IT之家 2024-09-09 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 12
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 43
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 8
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 28
+        }
+      ],
+      "batteryConditions": "AAC、默认设置、50% 音量；“降噪开”含通透模式开启",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 4.2
+        }
+      ],
+      "weightNote": "±0.1g",
+      "bluetooth": "5.4",
+      "officialLink": {
+        "label": "OPPO 官网（海外站）产品页",
+        "url": "https://www.oppo.com/en/accessories/enco-air4/"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-794422"
+        ],
+        "anc": [
+          "oppo-global-enco-air4-specs",
+          "ithome-794422"
+        ],
+        "battery": [
+          "oppo-global-enco-air4-specs"
+        ],
+        "weight": [
+          "oppo-global-enco-air4-specs"
+        ],
+        "bluetooth": [
+          "oppo-global-enco-air4-specs"
+        ]
+      },
+      "notes": [
+        "规格取自 OPPO 海外官网，国行版本未单独核对。",
+        "官网未写明佩戴方式和降噪深度，两项记为未知。",
+        "与 Enco Air4 Pro 为不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "redmi-buds-6",
+      "brand": "Redmi（小米）",
+      "model": "Redmi Buds 6",
+      "displayName": "Redmi Buds 6",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": "最高 49dB 降噪深度",
+      "priceCny": 199,
+      "priceType": "售价",
+      "priceConditions": "售价 199 元（IT之家 2024-09-26 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "unspecified",
+          "anc": "unspecified",
+          "hours": 42
+        }
+      ],
+      "batteryConditions": "报道写“至高续航 42 小时”，未说明是否含充电盒及测试条件",
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-798668"
+        ],
+        "anc": [
+          "ithome-798668"
+        ],
+        "ancSpec": [
+          "ithome-798668"
+        ],
+        "battery": [
+          "ithome-798668"
+        ]
+      },
+      "notes": [
+        "小米官网对自动访问返回 Access Denied，未能核对官方参数页和产品页链接；佩戴方式、单次续航、重量和蓝牙版本记为未知。",
+        "与 Redmi Buds 6S、Redmi Buds 6 Pro 为同系列不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "redmi-buds-6s",
+      "brand": "Redmi（小米）",
+      "model": "Redmi Buds 6S",
+      "displayName": "Redmi Buds 6S",
+      "wearingStyle": "半入耳式",
+      "anc": true,
+      "ancSpec": null,
+      "priceCny": 199,
+      "priceType": "售价",
+      "priceConditions": "售价 199 元（IT之家 2024-06-07、2024-06-14 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "unspecified",
+          "hours": 7
+        },
+        {
+          "scope": "total",
+          "anc": "unspecified",
+          "hours": 33
+        }
+      ],
+      "batteryConditions": "报道未说明降噪状态和测试条件",
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-773833",
+          "ithome-775219"
+        ],
+        "anc": [
+          "ithome-773833",
+          "ithome-775219"
+        ],
+        "wearingStyle": [
+          "ithome-773833",
+          "ithome-775219"
+        ],
+        "battery": [
+          "ithome-773833",
+          "ithome-775219"
+        ]
+      },
+      "notes": [
+        "报道只写支持主动降噪和自适应降噪，未给出降噪深度。",
+        "小米官网对自动访问返回 Access Denied，未能核对官方参数页；重量和蓝牙版本记为未知。",
+        "与 Redmi Buds 6、Redmi Buds 6 Pro 为同系列不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "huawei-freebuds-se-3",
+      "brand": "华为 HUAWEI",
+      "model": "FreeBuds SE 3",
+      "displayName": "华为 FreeBuds SE 3",
+      "wearingStyle": null,
+      "anc": false,
+      "ancSpec": null,
+      "priceCny": 199,
+      "priceType": "定价",
+      "priceConditions": "定价 199 元；首发 / 全款预售到手价 179 元（IT之家 2024-12-12、2024-12-20 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "unspecified",
+          "hours": 9
+        },
+        {
+          "scope": "total",
+          "anc": "unspecified",
+          "hours": 42
+        }
+      ],
+      "batteryConditions": "默认设置、50% 音量、AAC 编码（华为官网，实验室数据）",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 3.8
+        }
+      ],
+      "weightNote": "约；充电盒约 33 g",
+      "bluetooth": "5.4",
+      "officialLink": {
+        "label": "华为官网规格页",
+        "url": "https://consumer.huawei.com/cn/headphones/freebuds-se-3/specs/"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-817020",
+          "ithome-818900"
+        ],
+        "anc": [
+          "huawei-cn-freebuds-se3-specs"
+        ],
+        "battery": [
+          "huawei-cn-freebuds-se3-specs",
+          "ithome-818900"
+        ],
+        "weight": [
+          "huawei-cn-freebuds-se3-specs",
+          "ithome-818900"
+        ],
+        "bluetooth": [
+          "huawei-cn-freebuds-se3-specs",
+          "ithome-818900"
+        ]
+      },
+      "notes": [
+        "华为官网规格页的音频技术只列“通话降噪/多 EQ”，没有主动降噪，记为不支持主动降噪。",
+        "官网规格页未列出佩戴方式，记为未知。",
+        "与 FreeBuds 6i 为不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "qcy-melobuds-a30",
+      "brand": "QCY",
+      "model": "MeloBuds A30",
+      "displayName": "QCY MeloBuds A30",
+      "wearingStyle": null,
+      "anc": null,
+      "ancSpec": null,
+      "priceCny": 209,
+      "priceType": "定价",
+      "priceConditions": "定价 209 元（IT之家 2026-05-08 报道京东发售）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 11
+        },
+        {
+          "scope": "total",
+          "anc": "unspecified",
+          "hours": 50
+        }
+      ],
+      "batteryConditions": "报道写“至高”，未说明测试条件",
+      "weight": [
+        {
+          "scope": "unspecified",
+          "grams": 4.5
+        }
+      ],
+      "weightNote": "报道写“耳机本体重量 4.5g”，未说明是否为单只",
+      "bluetooth": null,
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-947942"
+        ],
+        "battery": [
+          "ithome-947942"
+        ],
+        "weight": [
+          "ithome-947942"
+        ]
+      },
+      "notes": [
+        "报道提到“天穹降噪架构 V8”和“关闭降噪”时的续航，但没有写明是主动降噪，主动降噪记为未知。",
+        "报道主打 8 麦克风通话降噪，通话降噪不等于主动降噪。",
+        "未核对 QCY 官网中文产品页，佩戴方式和蓝牙版本记为未知。"
+      ]
+    },
+    {
+      "id": "edifier-w800bt-free-anc",
+      "brand": "漫步者 EDIFIER",
+      "model": "W800BT Free 降噪版",
+      "displayName": "漫步者 W800BT Free 降噪版",
+      "wearingStyle": "头戴式",
+      "anc": true,
+      "ancSpec": "44dB 主动降噪",
+      "priceCny": 269,
+      "priceType": "首发到手价",
+      "priceConditions": "首发到手价 269 元（IT之家 2024-05-13 报道）；报道未给出常规定价",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "unspecified",
+          "hours": 42
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 25
+        }
+      ],
+      "batteryConditions": "报道写“续航长达 42 小时（开启降噪后为 25 小时）”，42 小时未注明降噪状态",
+      "weight": [
+        {
+          "scope": "total",
+          "grams": 253
+        }
+      ],
+      "weightNote": "约",
+      "bluetooth": "5.4",
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-767619"
+        ],
+        "anc": [
+          "ithome-767619"
+        ],
+        "ancSpec": [
+          "ithome-767619"
+        ],
+        "wearingStyle": [
+          "ithome-767619"
+        ],
+        "battery": [
+          "ithome-767619"
+        ],
+        "weight": [
+          "ithome-767619"
+        ],
+        "bluetooth": [
+          "ithome-767619"
+        ]
+      },
+      "notes": [
+        "这里是 W800BT Free 降噪版；非降噪版 W800BT Free 为不同型号，参数和价格不能混用。",
+        "漫步者中文官网自动访问时页面为空，未能核对官方产品页。"
+      ]
+    },
+    {
+      "id": "hivi-aw-20",
+      "brand": "惠威 HiVi",
+      "model": "AW-20",
+      "displayName": "惠威 AW-20",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": "-25dB 深度主动降噪",
+      "priceCny": 269,
+      "priceType": "售价",
+      "priceConditions": "售价 269 元；券后到手价 241.55 元（IT之家 2026-06-04 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 5
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 22.5
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 3.5
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 15
+        }
+      ],
+      "batteryConditions": "报道写“整机续航”和“耳机播放时间”，按“整机续航”记为含充电盒",
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": "6.0",
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-960122"
+        ],
+        "anc": [
+          "ithome-960122"
+        ],
+        "ancSpec": [
+          "ithome-960122"
+        ],
+        "battery": [
+          "ithome-960122"
+        ],
+        "bluetooth": [
+          "ithome-960122"
+        ]
+      },
+      "notes": [
+        "报道未写明佩戴方式和重量，两项记为未知。"
+      ]
+    },
+    {
+      "id": "oppo-enco-air4-pro",
+      "brand": "OPPO",
+      "model": "Enco Air4 Pro",
+      "displayName": "OPPO Enco Air4 Pro",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": "降噪深度达 49dB",
+      "priceCny": 299,
+      "priceType": "原价",
+      "priceConditions": "原价 299 元；首发价 269 元（IT之家 2024-05-23、2024-05-31 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 12
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 44
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 5.5
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 20
+        }
+      ],
+      "batteryConditions": "AAC 协议；LHDC 协议下降噪关 7.5 / 28 小时、降噪开 4.5 / 16 小时",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 4.4
+        }
+      ],
+      "weightNote": null,
+      "bluetooth": "5.4",
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-770150",
+          "ithome-772117"
+        ],
+        "anc": [
+          "ithome-770150"
+        ],
+        "ancSpec": [
+          "ithome-770150",
+          "ithome-772117"
+        ],
+        "battery": [
+          "ithome-770150"
+        ],
+        "weight": [
+          "ithome-772117"
+        ],
+        "bluetooth": [
+          "ithome-770150",
+          "ithome-772117"
+        ]
+      },
+      "notes": [
+        "主动降噪依据报道中“开启 ANC / 关闭 ANC”的续航数据记为支持。",
+        "报道正文未写佩戴方式（只有电商链接标题提到，不作依据），记为未知；OPPO 中文官网产品页自动访问返回 404。",
+        "与 Enco Air4 为不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "honor-earbuds-x9",
+      "brand": "荣耀 HONOR",
+      "model": "Earbuds X9",
+      "displayName": "荣耀 Earbuds X9",
+      "wearingStyle": "入耳式",
+      "anc": true,
+      "ancSpec": "49dB 主动降噪",
+      "priceCny": 299,
+      "priceType": "售价",
+      "priceConditions": "售价 299 元（IT之家 2025-05-28 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "unspecified",
+          "anc": "unspecified",
+          "hours": 42
+        }
+      ],
+      "batteryConditions": "报道写“42 小时长续航”，未说明是否含充电盒及降噪状态",
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-856702"
+        ],
+        "anc": [
+          "ithome-856702"
+        ],
+        "ancSpec": [
+          "ithome-856702"
+        ],
+        "wearingStyle": [
+          "ithome-856702"
+        ],
+        "battery": [
+          "ithome-856702"
+        ]
+      },
+      "notes": [
+        "报道未写重量和蓝牙版本，两项记为未知；未核对荣耀官网产品页。",
+        "与荣耀 Earbuds X8 等同系列型号参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "vivo-tws-4",
+      "brand": "vivo",
+      "model": "TWS 4",
+      "displayName": "vivo TWS 4",
+      "wearingStyle": "入耳式",
+      "anc": true,
+      "ancSpec": "降噪深度至深 55dB",
+      "priceCny": 399,
+      "priceType": "上市价格",
+      "priceConditions": "vivo 官网参数页“上市价格 399.00元”；IT之家 2024-03-26 报道标准版 399 元",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "unspecified",
+          "hours": 11
+        },
+        {
+          "scope": "total",
+          "anc": "unspecified",
+          "hours": 45
+        }
+      ],
+      "batteryConditions": "官网写“11h/45h综合续航”，未注明是否开启降噪",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 4.8
+        }
+      ],
+      "weightNote": "约 4.8±0.3g",
+      "bluetooth": null,
+      "officialLink": {
+        "label": "vivo 官网产品页",
+        "url": "https://www.vivo.com.cn/vivo/vivotws4"
+      },
+      "fieldSources": {
+        "price": [
+          "vivo-cn-tws4-param",
+          "ithome-758271"
+        ],
+        "anc": [
+          "vivo-cn-tws4-param"
+        ],
+        "ancSpec": [
+          "vivo-cn-tws4-param"
+        ],
+        "wearingStyle": [
+          "vivo-cn-tws4-param"
+        ],
+        "battery": [
+          "vivo-cn-tws4-param"
+        ],
+        "weight": [
+          "vivo-cn-tws4-param"
+        ]
+      },
+      "notes": [
+        "这里是 TWS 4 标准版；TWS 4 Hi-Fi 版（499 元）为不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "redmi-buds-6-pro",
+      "brand": "Redmi（小米）",
+      "model": "Redmi Buds 6 Pro",
+      "displayName": "Redmi Buds 6 Pro",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": "55dB 降噪深度",
+      "priceCny": 399,
+      "priceType": "售价",
+      "priceConditions": "“潮流版”配色开售售价 399 元（IT之家 2025-01-02 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [],
+      "batteryConditions": null,
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": null,
+      "fieldSources": {
+        "price": [
+          "ithome-821856"
+        ],
+        "anc": [
+          "ithome-821856"
+        ],
+        "ancSpec": [
+          "ithome-821856"
+        ]
+      },
+      "notes": [
+        "价格来自“潮流版”配色的开售报道；其他配色的首发价未核对官方来源。",
+        "小米官网对自动访问返回 Access Denied，未能核对官方参数页；佩戴方式、续航、重量和蓝牙版本记为未知。",
+        "与 Redmi Buds 6、Redmi Buds 6S 为同系列不同型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "oneplus-buds-3",
+      "brand": "一加 OnePlus",
+      "model": "Buds 3",
+      "displayName": "一加 Buds 3",
+      "wearingStyle": "入耳式",
+      "anc": true,
+      "ancSpec": "最高 49dB 自适应降噪",
+      "priceCny": 499,
+      "priceType": "零售价",
+      "priceConditions": "零售价 499 元；首销立减 50 元后 449 元（IT之家 2024-01-04 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 10
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 44
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 6.5
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 28
+        }
+      ],
+      "batteryConditions": "AAC、50% 音量；“降噪开”含通透模式开启",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 4.8
+        }
+      ],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": {
+        "label": "一加官网（美国站）产品页",
+        "url": "https://www.oneplus.com/us/oneplus-buds-3"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-743374"
+        ],
+        "anc": [
+          "oneplus-us-buds3-specs",
+          "ithome-743374"
+        ],
+        "ancSpec": [
+          "oneplus-us-buds3-specs"
+        ],
+        "wearingStyle": [
+          "oneplus-us-buds3-specs"
+        ],
+        "battery": [
+          "oneplus-us-buds3-specs"
+        ],
+        "weight": [
+          "oneplus-us-buds3-specs"
+        ]
+      },
+      "notes": [
+        "规格取自一加美国官网，国行版本未单独核对。",
+        "佩戴方式依据官网包装清单含 S/M/L 硅胶耳塞记为入耳式。"
+      ]
+    },
+    {
+      "id": "sony-wf-c510",
+      "brand": "索尼 Sony",
+      "model": "WF-C510",
+      "displayName": "索尼 WF-C510",
+      "wearingStyle": "入耳式",
+      "anc": false,
+      "ancSpec": null,
+      "priceCny": 499,
+      "priceType": "建议零售价",
+      "priceConditions": "国行建议零售价 499 元（IT之家 2024-09-27 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "unspecified",
+          "hours": 11
+        },
+        {
+          "scope": "total",
+          "anc": "unspecified",
+          "hours": 22
+        }
+      ],
+      "batteryConditions": "官方注明会因使用情况而异",
+      "weight": [
+        {
+          "scope": "unspecified",
+          "grams": 4.6
+        }
+      ],
+      "weightNote": "官方写“仅约为4.6克”，未明确是否为单只",
+      "bluetooth": null,
+      "officialLink": {
+        "label": "索尼中国官方发布稿",
+        "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2024/240927.html"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-798823"
+        ],
+        "anc": [
+          "sony-cn-240927"
+        ],
+        "wearingStyle": [
+          "sony-cn-240927"
+        ],
+        "battery": [
+          "sony-cn-240927"
+        ],
+        "weight": [
+          "sony-cn-240927"
+        ]
+      },
+      "notes": [
+        "官方新闻稿只提到“被动降噪”，没有主动降噪功能，记为不支持主动降噪。",
+        "佩戴方式依据官方描述“耳机本体和耳塞可以充分贴合耳道”记为入耳式。"
+      ]
+    },
+    {
+      "id": "huawei-freebuds-6i",
+      "brand": "华为 HUAWEI",
+      "model": "FreeBuds 6i",
+      "displayName": "华为 FreeBuds 6i",
+      "wearingStyle": "入耳式",
+      "anc": true,
+      "ancSpec": "27dB 降噪深度",
+      "priceCny": 599,
+      "priceType": "官网标价",
+      "priceConditions": "华为官网标价“¥599 起”（产品页，2026-11-01 访问）；IT之家 2024-08-06 报道国内售价 599 元",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 8
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 5
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 35
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 20
+        }
+      ],
+      "batteryConditions": null,
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 5.4
+        }
+      ],
+      "weightNote": "约",
+      "bluetooth": null,
+      "officialLink": {
+        "label": "华为官网产品页",
+        "url": "https://consumer.huawei.com/cn/headphones/freebuds6i/"
+      },
+      "fieldSources": {
+        "price": [
+          "huawei-cn-freebuds6i-page",
+          "ithome-786570"
+        ],
+        "anc": [
+          "huawei-cn-freebuds6i-specs"
+        ],
+        "ancSpec": [
+          "ithome-786570"
+        ],
+        "wearingStyle": [
+          "huawei-cn-freebuds6i-page"
+        ],
+        "battery": [
+          "huawei-cn-freebuds6i-specs"
+        ],
+        "weight": [
+          "huawei-cn-freebuds6i-specs"
+        ]
+      },
+      "notes": [
+        "佩戴方式依据官网产品页“亲肤硅胶耳塞……三种耳塞尺寸”记为入耳式。",
+        "降噪深度取自 IT之家报道标题，官网规格页的对应数值未记录。"
+      ]
+    },
+    {
+      "id": "sony-wh-ch720n",
+      "brand": "索尼 Sony",
+      "model": "WH-CH720N",
+      "displayName": "索尼 WH-CH720N",
+      "wearingStyle": "头戴式",
+      "anc": true,
+      "ancSpec": null,
+      "priceCny": 799,
+      "priceType": "售价",
+      "priceConditions": "国行上架官网时的售价 799 元（IT之家 2023-03-20 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "off",
+          "hours": 50
+        },
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 30
+        }
+      ],
+      "batteryConditions": "索尼中国新闻稿，均为“约”",
+      "weight": [
+        {
+          "scope": "total",
+          "grams": 192
+        }
+      ],
+      "weightNote": "约",
+      "bluetooth": null,
+      "officialLink": {
+        "label": "索尼中国官方发布稿",
+        "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2023/20230301-1.html"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-680852"
+        ],
+        "anc": [
+          "sony-cn-20230301"
+        ],
+        "wearingStyle": [
+          "sony-cn-20230301"
+        ],
+        "battery": [
+          "sony-cn-20230301"
+        ],
+        "weight": [
+          "sony-cn-20230301"
+        ]
+      },
+      "notes": [
+        "IT之家报道开启降噪续航为 35 小时，与索尼中国新闻稿的约 30 小时不一致，以官方新闻稿为准。"
+      ]
+    }
+  ],
+  "reserve": [
+    {
+      "id": "sony-wf-1000xm4",
+      "brand": "索尼 Sony",
+      "model": "WF-1000XM4",
+      "displayName": "索尼 WF-1000XM4",
+      "wearingStyle": "入耳式",
+      "anc": true,
+      "ancSpec": null,
+      "priceCny": 1999,
+      "priceType": "售价",
+      "priceConditions": "国行发布售价 1999 元（IT之家 2021-06-09 报道）；2021 年产品",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 8
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 24
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 36
+        }
+      ],
+      "batteryConditions": "索尼中国新闻稿，均为“约”",
+      "weight": [
+        {
+          "scope": "earbud",
+          "grams": 7.3
+        }
+      ],
+      "weightNote": "约",
+      "bluetooth": null,
+      "officialLink": {
+        "label": "索尼中国官方发布稿",
+        "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2021/2021-06-15-1.html"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-556321"
+        ],
+        "anc": [
+          "sony-cn-20210615"
+        ],
+        "wearingStyle": [
+          "sony-cn-20210615"
+        ],
+        "battery": [
+          "sony-cn-20210615"
+        ],
+        "weight": [
+          "sony-cn-20210615"
+        ]
+      },
+      "notes": [
+        "本期不展示：价格高于本期价位分布（500 元以上只保留 2 款）。",
+        "佩戴方式依据官方描述“降噪耳塞”记为入耳式。",
+        "与 WF-1000XM5 为同系列不同代际型号，参数和价格不能混用。"
+      ]
+    },
+    {
+      "id": "sony-wf-1000xm5",
+      "brand": "索尼 Sony",
+      "model": "WF-1000XM5",
+      "displayName": "索尼 WF-1000XM5",
+      "wearingStyle": null,
+      "anc": true,
+      "ancSpec": null,
+      "priceCny": 1999,
+      "priceType": "售价",
+      "priceConditions": "国行发布售价 1999 元（IT之家 2023-07-27 报道）",
+      "priceVerifiedAt": "2026-11-01",
+      "battery": [
+        {
+          "scope": "single",
+          "anc": "on",
+          "hours": 8
+        },
+        {
+          "scope": "total",
+          "anc": "on",
+          "hours": 24
+        },
+        {
+          "scope": "total",
+          "anc": "off",
+          "hours": 36
+        }
+      ],
+      "batteryConditions": "索尼中国新闻稿，均为“约”",
+      "weight": [],
+      "weightNote": null,
+      "bluetooth": null,
+      "officialLink": {
+        "label": "索尼中国官方发布稿",
+        "url": "https://www.sony.com.cn/content/sonyportal/zh-cn/cms/newscenter/product/2023/20230727-1.html"
+      },
+      "fieldSources": {
+        "price": [
+          "ithome-708519"
+        ],
+        "anc": [
+          "sony-cn-20230727"
+        ],
+        "battery": [
+          "sony-cn-20230727"
+        ]
+      },
+      "notes": [
+        "本期不展示：价格高于本期价位分布（500 元以上只保留 2 款）。",
+        "官方新闻稿未写明佩戴方式，重量只写“比前代减少约20%”，两项记为未知。"
+      ]
+    }
+  ]
+}

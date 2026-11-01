@@ -1,0 +1,869 @@
+{
+  "schemaVersion": 1,
+  "description": "ShopMate 购买条件与结构化筛选的规则用例。前端（TypeScript）与后端（FastAPI）实现都必须通过全部用例；规则有变化时先改这里。",
+  "applyCases": [
+    {
+      "name": "系统建议在用户确认前不生效",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "通勤场景通常会考虑主动降噪"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "anc",
+            "status": "suggested",
+            "kind": "hard",
+            "source": "system",
+            "value": true,
+            "reason": "通勤场景通常会考虑主动降噪"
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "解析器不能替用户采纳建议",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "通勤场景"
+            }
+          ]
+        },
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "confirm",
+              "field": "anc"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "anc",
+            "status": "suggested",
+            "kind": "hard",
+            "source": "system",
+            "value": true,
+            "reason": "通勤场景"
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": [
+          "confirm"
+        ]
+      }
+    },
+    {
+      "name": "用户采纳后才生效，来源仍记录为系统建议",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "通勤场景"
+            }
+          ]
+        },
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "confirm",
+              "field": "anc"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "anc",
+            "status": "confirmed",
+            "kind": "hard",
+            "source": "system",
+            "value": true,
+            "reason": "通勤场景"
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "用户可以把建议采纳为偏好而不是硬约束",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "通勤场景"
+            }
+          ]
+        },
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "confirm",
+              "field": "anc",
+              "kind": "soft"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "anc",
+            "status": "confirmed",
+            "kind": "soft",
+            "source": "system",
+            "value": true,
+            "reason": "通勤场景"
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "忽略过的建议在本次选购中不再提出",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "通勤场景"
+            }
+          ]
+        },
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "dismiss",
+              "field": "anc"
+            }
+          ]
+        },
+        {
+          "origin": "system",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "再次建议"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [],
+        "dismissed": [
+          "anc"
+        ],
+        "rejectedOps": [
+          "suggest"
+        ]
+      }
+    },
+    {
+      "name": "系统建议不覆盖用户已设置的条件",
+      "steps": [
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "set",
+              "field": "anc",
+              "kind": "soft",
+              "value": true
+            }
+          ]
+        },
+        {
+          "origin": "system",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "相似款支持主动降噪"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "anc",
+            "status": "confirmed",
+            "kind": "soft",
+            "source": "user",
+            "value": true
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": [
+          "suggest"
+        ]
+      }
+    },
+    {
+      "name": "只修改预算时其他条件保持不变",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "set",
+              "field": "budget",
+              "kind": "hard",
+              "value": 300
+            },
+            {
+              "op": "set",
+              "field": "scene",
+              "kind": "scene",
+              "value": "地铁通勤"
+            },
+            {
+              "op": "set",
+              "field": "anc",
+              "kind": "hard",
+              "value": true
+            }
+          ]
+        },
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "update",
+              "field": "budget",
+              "value": 200
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "budget",
+            "status": "confirmed",
+            "kind": "hard",
+            "source": "user",
+            "value": 200
+          },
+          {
+            "field": "scene",
+            "status": "confirmed",
+            "kind": "scene",
+            "source": "user",
+            "value": "地铁通勤"
+          },
+          {
+            "field": "anc",
+            "status": "confirmed",
+            "kind": "hard",
+            "source": "user",
+            "value": true
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "待确认项不生效，用户选择后才生效",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "ask",
+              "field": "budget",
+              "question": "300 元是预算上限，还是大概的参考？",
+              "rawText": "三百块钱",
+              "options": [
+                {
+                  "label": "300 元以内（上限）",
+                  "kind": "hard",
+                  "value": 300
+                },
+                {
+                  "label": "300 元左右（参考）",
+                  "kind": "soft",
+                  "value": 300
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "resolve",
+              "field": "budget",
+              "option": 1
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "budget",
+            "status": "confirmed",
+            "kind": "soft",
+            "source": "user",
+            "value": 300
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "商品列表继承的条件来源记录为 page",
+      "steps": [
+        {
+          "origin": "page",
+          "changes": [
+            {
+              "op": "set",
+              "field": "budget",
+              "kind": "hard",
+              "value": 300
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [
+          {
+            "field": "budget",
+            "status": "confirmed",
+            "kind": "hard",
+            "source": "page",
+            "value": 300
+          }
+        ],
+        "dismissed": [],
+        "rejectedOps": []
+      }
+    },
+    {
+      "name": "商品列表不能提出系统建议",
+      "steps": [
+        {
+          "origin": "page",
+          "changes": [
+            {
+              "op": "suggest",
+              "field": "anc",
+              "kind": "hard",
+              "value": true,
+              "reason": "无"
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [],
+        "dismissed": [],
+        "rejectedOps": [
+          "suggest"
+        ]
+      }
+    },
+    {
+      "name": "不合法的值和类别被拒绝",
+      "steps": [
+        {
+          "origin": "ui",
+          "changes": [
+            {
+              "op": "set",
+              "field": "budget",
+              "kind": "hard",
+              "value": -5
+            },
+            {
+              "op": "set",
+              "field": "scene",
+              "kind": "hard",
+              "value": "地铁通勤"
+            },
+            {
+              "op": "set",
+              "field": "wearingStyle",
+              "kind": "hard",
+              "value": {
+                "exclude": [
+                  "入耳式",
+                  "半入耳式",
+                  "头戴式"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [],
+        "dismissed": [],
+        "rejectedOps": [
+          "set",
+          "set",
+          "set"
+        ]
+      }
+    },
+    {
+      "name": "没有已生效的条件时不能修改",
+      "steps": [
+        {
+          "origin": "interpreter",
+          "changes": [
+            {
+              "op": "update",
+              "field": "budget",
+              "value": 200
+            }
+          ]
+        }
+      ],
+      "expect": {
+        "conditions": [],
+        "dismissed": [],
+        "rejectedOps": [
+          "update"
+        ]
+      }
+    }
+  ],
+  "searchCases": [
+    {
+      "name": "预算上限严格执行：¥203.74 不能进入“200 元以内”",
+      "products": [
+        {
+          "id": "p1",
+          "price": 203.74,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 199,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p3",
+          "price": 200,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "budget",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": 200
+        }
+      ],
+      "expectIds": [
+        "p2",
+        "p3"
+      ]
+    },
+    {
+      "name": "必需功能未知时不算满足",
+      "products": [
+        {
+          "id": "p1",
+          "price": 199,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 189,
+          "anc": "unknown",
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p3",
+          "price": 179,
+          "anc": false,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "anc",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": true
+        }
+      ],
+      "expectIds": [
+        "p1"
+      ]
+    },
+    {
+      "name": "没有有效价格时不能声称符合预算",
+      "products": [
+        {
+          "id": "p1",
+          "price": null,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 150,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "budget",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": 300
+        }
+      ],
+      "expectIds": [
+        "p2"
+      ]
+    },
+    {
+      "name": "未设置预算时，价格待核验的商品可以展示，排在最后",
+      "products": [
+        {
+          "id": "p1",
+          "price": null,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 150,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [],
+      "expectIds": [
+        "p2",
+        "p1"
+      ]
+    },
+    {
+      "name": "未采纳的建议和待确认项不参与筛选",
+      "products": [
+        {
+          "id": "p1",
+          "price": 199,
+          "anc": false,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 399,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "anc",
+          "status": "suggested",
+          "kind": "hard",
+          "source": "system",
+          "value": true,
+          "reason": "通勤场景"
+        },
+        {
+          "field": "budget",
+          "status": "pending",
+          "kind": null,
+          "source": "user",
+          "question": "300 元是上限还是参考？",
+          "rawText": "三百块钱",
+          "options": [
+            {
+              "label": "上限",
+              "kind": "hard",
+              "value": 300
+            },
+            {
+              "label": "参考",
+              "kind": "soft",
+              "value": 300
+            }
+          ]
+        }
+      ],
+      "expectIds": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "name": "软偏好只影响排序，不排除商品",
+      "products": [
+        {
+          "id": "p1",
+          "price": 150,
+          "anc": false,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 250,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p3",
+          "price": 200,
+          "anc": "unknown",
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "anc",
+          "status": "confirmed",
+          "kind": "soft",
+          "source": "user",
+          "value": true
+        }
+      ],
+      "expectIds": [
+        "p2",
+        "p1",
+        "p3"
+      ]
+    },
+    {
+      "name": "参考预算按接近程度排序，超出的商品仍可展示",
+      "products": [
+        {
+          "id": "p1",
+          "price": 180,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 320,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p3",
+          "price": 290,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "budget",
+          "status": "confirmed",
+          "kind": "soft",
+          "source": "user",
+          "value": 300
+        }
+      ],
+      "expectIds": [
+        "p3",
+        "p2",
+        "p1"
+      ]
+    },
+    {
+      "name": "使用场景不参与筛选",
+      "products": [
+        {
+          "id": "p1",
+          "price": 150,
+          "anc": false,
+          "wearingStyle": "头戴式"
+        },
+        {
+          "id": "p2",
+          "price": 250,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "scene",
+          "status": "confirmed",
+          "kind": "scene",
+          "source": "user",
+          "value": "地铁通勤"
+        }
+      ],
+      "expectIds": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "name": "没有结果时不放宽条件",
+      "products": [
+        {
+          "id": "p1",
+          "price": 150,
+          "anc": false,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 250,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "budget",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": 200
+        },
+        {
+          "field": "anc",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": true
+        }
+      ],
+      "expectIds": []
+    },
+    {
+      "name": "排除佩戴方式",
+      "products": [
+        {
+          "id": "p1",
+          "price": 150,
+          "anc": true,
+          "wearingStyle": "入耳式"
+        },
+        {
+          "id": "p2",
+          "price": 250,
+          "anc": true,
+          "wearingStyle": "头戴式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "wearingStyle",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": {
+            "exclude": [
+              "入耳式"
+            ]
+          }
+        }
+      ],
+      "expectIds": [
+        "p2"
+      ]
+    },
+    {
+      "name": "佩戴方式未知时不能视为满足“排除入耳式”",
+      "products": [
+        {
+          "id": "p1",
+          "price": 199,
+          "anc": true,
+          "wearingStyle": "unknown"
+        },
+        {
+          "id": "p2",
+          "price": 799,
+          "anc": true,
+          "wearingStyle": "头戴式"
+        },
+        {
+          "id": "p3",
+          "price": 499,
+          "anc": false,
+          "wearingStyle": "入耳式"
+        }
+      ],
+      "conditions": [
+        {
+          "field": "wearingStyle",
+          "status": "confirmed",
+          "kind": "hard",
+          "source": "user",
+          "value": {
+            "exclude": [
+              "入耳式"
+            ]
+          }
+        }
+      ],
+      "expectIds": [
+        "p2"
+      ]
+    }
+  ]
+}

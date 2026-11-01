@@ -1,0 +1,271 @@
+{
+  "schemaVersion": 2,
+  "updatedAt": "2026-11-01",
+  "description": "商品图片许可登记（与商品数据核验分开）。status：licensed 准确型号的实拍照片，许可明确；demo 演示示意图，使用 demoImages 中许可明确的同类耳机照片（统一 4:3 棚拍构图，背景与机身配色按商品区分，修改记录见 modifications），按佩戴方式匹配；详情大图标注“演示示意图 · 非该型号实拍”，列表、首页和推荐卡片用页面级说明，不得当作该型号的照片；每款商品一张，不重复；reference-only 本地参考素材，未获授权，只在本地开发模式（NEXT_PUBLIC_IMAGE_MODE=local）显示，文件放在不提交到仓库的 frontend/reference-images/；missing 暂无图片，显示规范占位图和官方产品资料链接。demoImages.depicts：入耳式 / 半入耳式 / 头戴式，或 tws-case（闭合的真无线充电盒，看不出佩戴方式，只用于佩戴方式未核实、但来源提到充电盒的商品）。",
+  "demoImages": {
+    "in-ear-1": {
+      "file": "/product-images/demo/in-ear-1.jpg",
+      "depicts": "入耳式",
+      "alt": "淡紫背景上的一对藏青色入耳式真无线耳机（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_3.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "裁切为 4:3 并缩放至 800×600"
+    },
+    "in-ear-2": {
+      "file": "/product-images/demo/in-ear-2.jpg",
+      "depicts": "入耳式",
+      "alt": "浅绿背景上的一对墨绿色入耳式真无线耳机（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_8.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "裁切为 4:3 并缩放至 800×600；背景与机身的蓝紫色调改为绿色调，铜色耳塞与饰条保持原色"
+    },
+    "in-ear-3": {
+      "file": "/product-images/demo/in-ear-3.jpg",
+      "depicts": "入耳式",
+      "alt": "米色背景上的一只深灰色入耳式耳机（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_14.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "裁切为 4:3 并缩放至 800×600；背景与机身改为米色、深灰的低饱和色调，铜色部分保持原色"
+    },
+    "in-ear-4": {
+      "file": "/product-images/demo/in-ear-4.jpg",
+      "depicts": "入耳式",
+      "alt": "浅蓝背景上的一对深青色入耳式真无线耳机（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_7.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "裁切为 4:3 并缩放至 800×600；背景与机身的蓝紫色调改为青蓝色调，铜色部分保持原色"
+    },
+    "in-ear-5": {
+      "file": "/product-images/demo/in-ear-5.jpg",
+      "depicts": "入耳式",
+      "alt": "暖灰背景上的一只石墨色入耳式耳机（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_14.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "裁切为 4:3 并缩放至 800×600；水平镜像；背景与机身改为暖灰、石墨色调，铜色部分保持原色"
+    },
+    "semi-in-ear-1": {
+      "file": "/product-images/demo/semi-in-ear-1.jpg",
+      "depicts": "半入耳式",
+      "alt": "浅绿渐变背景上的浅色充电盒与两只无耳塞的半入耳式耳机（演示示意图）",
+      "author": "Cavid mehdili",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:1689948296276%C5%9Faz.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "将耳机与充电盒从原木桌背景中抠出，置于浅绿渐变背景并添加柔和投影；裁切为 4:3 并缩放至 800×600"
+    },
+    "over-ear-1": {
+      "file": "/product-images/demo/over-ear-1.jpg",
+      "depicts": "头戴式",
+      "alt": "奶油色背景上的黑色头戴式耳机（演示示意图）",
+      "author": "17mdnasim89",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Headphones_(56330).jpg",
+      "usage": "CC0 公共领域贡献，无需署名；这里仍保留来源记录。",
+      "modifications": "背景由黄色调为奶油色；裁切为 4:3 并缩放至 800×600"
+    },
+    "over-ear-2": {
+      "file": "/product-images/demo/over-ear-2.jpg",
+      "depicts": "头戴式",
+      "alt": "浅蓝背景上的黑色头戴式耳机（演示示意图）",
+      "author": "17mdnasim89",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Headphones_(56330).jpg",
+      "usage": "CC0 公共领域贡献，无需署名；这里仍保留来源记录。",
+      "modifications": "水平镜像；背景由黄色调为浅蓝；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-1": {
+      "file": "/product-images/demo/case-1.jpg",
+      "depicts": "tws-case",
+      "alt": "米色背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图调为米色背景、深灰机身；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-2": {
+      "file": "/product-images/demo/case-2.jpg",
+      "depicts": "tws-case",
+      "alt": "浅绿背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图调为浅绿背景、墨绿机身；水平镜像；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-3": {
+      "file": "/product-images/demo/case-3.jpg",
+      "depicts": "tws-case",
+      "alt": "浅蓝背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图调为浅蓝背景、深青机身；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-4": {
+      "file": "/product-images/demo/case-4.jpg",
+      "depicts": "tws-case",
+      "alt": "浅粉背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图调为浅粉背景、深棕机身；水平镜像；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-5": {
+      "file": "/product-images/demo/case-5.jpg",
+      "depicts": "tws-case",
+      "alt": "淡紫背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图保持原色；水平镜像；裁切为 4:3 并缩放至 800×600"
+    },
+    "case-6": {
+      "file": "/product-images/demo/case-6.jpg",
+      "depicts": "tws-case",
+      "alt": "暖灰背景上的闭合真无线耳机充电盒（演示示意图）",
+      "author": "DYVER",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bluetooth_Kopfh%C3%B6rer_4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片以相同许可（CC BY-SA 4.0）发布。",
+      "modifications": "去除充电盒正面的品牌标语；整图调为暖灰背景、石墨机身；裁切为 4:3 并缩放至 800×600"
+    }
+  },
+  "images": {
+    "oppo-enco-air4": {
+      "status": "demo",
+      "demo": "case-1",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，官网规格提到充电盒，用闭合充电盒示意图"
+    },
+    "redmi-buds-6": {
+      "status": "demo",
+      "demo": "case-2",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，报道提到充电盒，用闭合充电盒示意图"
+    },
+    "redmi-buds-6s": {
+      "status": "demo",
+      "demo": "semi-in-ear-1",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "huawei-freebuds-se-3": {
+      "status": "demo",
+      "demo": "case-3",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，报道提到耳机舱（充电盒），用闭合充电盒示意图"
+    },
+    "qcy-melobuds-a30": {
+      "status": "demo",
+      "demo": "case-4",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，报道提到充电盒，用闭合充电盒示意图"
+    },
+    "edifier-w800bt-free-anc": {
+      "status": "demo",
+      "demo": "over-ear-2",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "hivi-aw-20": {
+      "status": "demo",
+      "demo": "case-5",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，报道写整机续航，用闭合充电盒示意图"
+    },
+    "oppo-enco-air4-pro": {
+      "status": "demo",
+      "demo": "case-6",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，报道提到充电盒，用闭合充电盒示意图"
+    },
+    "honor-earbuds-x9": {
+      "status": "demo",
+      "demo": "in-ear-1",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "vivo-tws-4": {
+      "status": "demo",
+      "demo": "in-ear-2",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "redmi-buds-6-pro": {
+      "status": "missing",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片；佩戴方式未核实，来源也没有提到充电盒，不配示意图",
+      "referenceFile": null
+    },
+    "oneplus-buds-3": {
+      "status": "demo",
+      "demo": "in-ear-3",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "sony-wf-c510": {
+      "status": "demo",
+      "demo": "in-ear-4",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "huawei-freebuds-6i": {
+      "status": "demo",
+      "demo": "in-ear-5",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "sony-wh-ch720n": {
+      "status": "demo",
+      "demo": "over-ear-1",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到准确型号照片"
+    },
+    "sony-wf-1000xm4": {
+      "status": "licensed",
+      "file": "/product-images/sony-wf-1000xm4.jpg",
+      "alt": "索尼 WF-1000XM4 银色耳机与充电盒（门店展示）",
+      "author": "KKPCW（Kyu3）",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sony_WF-1000XM4.jpg",
+      "usage": "须署名作者并附许可链接、注明已修改；不得暗示作者认可本项目；修改后的图片须以相同许可发布。",
+      "modifications": "缩放至 1000px 宽",
+      "checkedAt": "2026-11-01"
+    },
+    "sony-wf-1000xm5": {
+      "status": "missing",
+      "checkedAt": "2026-11-01",
+      "searched": "Wikimedia Commons 未找到可授权的准确型号照片",
+      "referenceFile": null
+    }
+  }
+}
