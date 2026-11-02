@@ -47,9 +47,11 @@ try {
   await new Promise(r => ws.addEventListener('open', r));
   let id = 0;
   const waiting = new Map();
+  const pausedChats = []; // Fetch 拦下的 /api/chat 请求，用来在“等待回复”期间操作
   ws.addEventListener('message', e => {
     const m = JSON.parse(e.data);
     if (m.id && waiting.has(m.id)) { waiting.get(m.id)(m); waiting.delete(m.id); return; }
+    if (m.method === 'Fetch.requestPaused') pausedChats.push(m.params.requestId);
     if (m.method === 'Runtime.exceptionThrown') problems.push(`exception: ${m.params.exceptionDetails.exception?.description}`);
     if (m.method === 'Runtime.consoleAPICalled' && ['error', 'warning'].includes(m.params.type)) {
       problems.push(`console.${m.params.type}: ${m.params.args.map(a => a.value ?? a.description).join(' ')}`);
@@ -92,6 +94,18 @@ try {
     await sleep(80);
     await run(`$('.composer button[type=submit]').click();`);
     await sleep(1000);
+  };
+  // 聊天容器的滚动状态。“可见”指在容器内、不被顶部“正在选购”栏挡住
+  const VIEW = `const b = $('.assistant-body').getBoundingClientRect(), top = $('.shopping-context')?.getBoundingClientRect().bottom ?? b.top, last = s => [...document.querySelectorAll(s)].at(-1)?.getBoundingClientRect();`;
+  const atBottom = () => run(`const b = $('.assistant-body'); return b.scrollHeight - b.scrollTop - b.clientHeight < 2`);
+  const inView = sel => run(`${VIEW} const r = last(${JSON.stringify(sel)}); return !!r && r.top >= top - 1 && r.bottom <= b.bottom + 1`);
+  const latestVisible = () => inView('.messages > .turn');                     // 最新一轮完整可见
+  const topVisible = sel => run(`${VIEW} const r = last(${JSON.stringify(sel)}); return !!r && r.top >= top - 1 && r.top < b.bottom - 40`); // 开头可见
+  const bodyCenter = () => run(`const r = $('.assistant-body').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }`);
+  const wheel = async deltaY => {
+    const { x, y } = await bodyCenter();
+    await send('Input.dispatchMouseEvent', { type: 'mouseWheel', x, y, deltaX: 0, deltaY });
+    await sleep(600);
   };
 
   await send('Page.enable');
@@ -144,7 +158,7 @@ try {
   await sleep(150);
   await sendText('不要入耳式，其他不变');
   check('修改条件后历史消息完整保留且没有折叠', await run(`const texts = [...document.querySelectorAll('.message')].map(e => e.textContent); return ${JSON.stringify(beforeHistory)}.every((t, i) => texts[i] === t) && !$('.message details')`));
-  check('阅读历史时不被新消息拉到底部', await run(`return $('.assistant-body').scrollTop < 5`));
+  check('阅读历史时主动发送消息：回到最新内容，新的一轮完整可见', await latestVisible());
   check('改条件后，之前一轮的推荐快照仍保留在对话中；佩戴方式未知的商品不算“不是入耳式”', await run(`const lists = document.querySelectorAll('.rec-list'); return lists.length === 2 && lists[0].querySelectorAll('.rec-item').length === 3 && lists[1].querySelectorAll('.rec-item').length === 2 && lists[1].dataset.matchCount === '2' && !lists[1].textContent.includes('Enco Air4')`));
   check('旧推荐中已不符合当前条件的商品被标记', await run(`return !!$('.rec-stale')`));
   check('助手回复不以“演示商品中有 N 款”为主要内容', await run(`return ![...document.querySelectorAll('.message')].some(e => /演示商品中有|款符合/.test(e.textContent))`));
@@ -354,6 +368,86 @@ try {
   const conditionsBeforeUnsupported = await run(`return $('.condition-tags')?.textContent ?? ''`);
   await sendText('想买沙发');
   check('未开放品类不修改耳机条件', await run(`return [...document.querySelectorAll('.message')].at(-1).textContent.includes('尚未开放') && ($('.condition-tags')?.textContent ?? '') === ${JSON.stringify(conditionsBeforeUnsupported)}`));
+
+  // 聊天自动滚动：发送、回复、推荐卡片和比较表出现后都显示最新内容；用户上滑看历史时暂停，滚回底部或再次发送时恢复。
+  // 只滚动聊天容器，商城页面不动。“等待回复期间上滑”用 CDP 暂停 /api/chat 请求来稳定复现。
+  await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await go('/headphones');
+  await run(`window.scrollTo(0, 400)`);
+  const listY = await run(`return window.scrollY`);
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  await sendText('300 元以内，地铁通勤，需要主动降噪');
+  await sendText('预算降到 200 元，其他不变');
+  check('收到带推荐卡片的回复后滚到底部，最新一轮和推荐卡片完整可见', await atBottom() && await latestVisible() && await inView('.rec-list'));
+  await sendText('Redmi Buds 6 和 OPPO Enco Air4 有什么区别？');
+  await waitFor(`return !!$('.assistant .compare-table')`);
+  await sleep(200);
+  check('比较表出现在对话下方：最新回复完整可见，比较表紧接着显示，不把回复挤出视野', await latestVisible() && await topVisible('.assistant .compare-table'));
+  await send('Fetch.enable', { patterns: [{ urlPattern: '*/api/chat', requestStage: 'Request' }] });
+  await run(`setValue($('#assistant-input'), '那它的续航怎么样？')`);
+  await sleep(80);
+  await run(`$('.composer button[type=submit]').click()`);
+  await waitFor(`return !!$('.loading-line')`);
+  for (let i = 0; i < 50 && !pausedChats.length; i++) await sleep(100);
+  check('发送后立即显示刚发出的消息和“正在整理”提示（比较表仍在下方）', pausedChats.length === 1 && await latestVisible() && await inView('.message.from-user') && await inView('.loading-line'));
+  await wheel(-700);
+  const readingTop = await run(`return $('.assistant-body').scrollTop`);
+  check('等待回复时上滑看历史：暂停跟随，出现“回到最新消息”', !(await inView('.loading-line')) && await run(`return !!$('.latest-message')`));
+  for (const requestId of pausedChats.splice(0)) await send('Fetch.continueRequest', { requestId });
+  await send('Fetch.disable');
+  await waitFor(`return !$('.loading-line')`);
+  await sleep(300);
+  check('上滑阅读时回复到达：不被拉到底部，阅读位置不变', await run(`return !!$('.latest-message') && Math.abs($('.assistant-body').scrollTop - ${readingTop}) < 2 && [...document.querySelectorAll('.message')].at(-1).textContent.includes('你是指')`));
+  await wheel(5000);
+  check('滚回底部附近后恢复跟随，“回到最新消息”消失', await run(`return !$('.latest-message')`));
+  // 流式输出尚未实现：把最新一条回复加高到超过一屏，模拟回复内容增长
+  await run(`[...document.querySelectorAll('.message')].at(-1).style.paddingBottom = '900px'`);
+  await sleep(200);
+  check('最新回复变长、超过一屏时跟随回复末尾（模拟流式输出）', await run(`${VIEW} const r = last('.message'); return r.bottom <= b.bottom + 1 && r.bottom > b.bottom - 80`));
+  await run(`[...document.querySelectorAll('.message')].at(-1).style.paddingBottom = ''`);
+  await wheel(-900);
+  await sendText('想买沙发');
+  check('上滑后再次发送：回到最新内容，新的一轮完整可见', await latestVisible() && await run(`return !$('.latest-message')`));
+  check('桌面：自动滚动只在聊天容器内进行，商品列表位置不变', await run(`return Math.abs(window.scrollY - ${listY}) < 2`));
+
+  // 手机：同样跟随最新内容；手指上滑暂停；多行输入时输入框增高；可视区域变矮（模拟键盘弹出）后输入框和最新内容仍可见
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await go('/headphones');
+  await run(`window.scrollTo(0, 300)`);
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  const lockedTop = await run(`return document.body.style.top`);
+  await sendText('300 元以内，地铁通勤，需要主动降噪');
+  await sendText('Redmi Buds 6 和 OPPO Enco Air4 有什么区别？');
+  await waitFor(`return !!$('.assistant .compare-table')`);
+  await sleep(200);
+  check('手机：比较表出现后，最新回复完整可见，比较表紧接着显示', await latestVisible() && await topVisible('.assistant .compare-table'));
+  const center = await bodyCenter();
+  const swipeFrom = await run(`return $('.assistant-body').scrollTop`);
+  await send('Input.synthesizeScrollGesture', { x: center.x, y: center.y, yDistance: 400, gestureSourceType: 'touch', speed: 1200 });
+  await sleep(400);
+  check('手机：手指上滑看历史时暂停跟随', await run(`return $('.assistant-body').scrollTop < ${swipeFrom} - 200 && !!$('.latest-message')`));
+  await run(`$('.latest-message').click()`);
+  await sleep(700);
+  check('手机：点“回到最新消息”回到最新内容', await latestVisible() && await run(`return !$('.latest-message')`));
+  const oneLine = await run(`return $('#assistant-input').getBoundingClientRect().height`);
+  await run(`$('#assistant-input').focus(); setValue($('#assistant-input'), '第一行\\n第二行\\n第三行')`);
+  await sleep(150);
+  check('手机：输入多行时输入框自动增高、内容不被裁切，最新内容仍可见', await run(`const t = $('#assistant-input'); return t.getBoundingClientRect().height > ${oneLine} + 20 && t.scrollHeight <= t.clientHeight + 1`) && await latestVisible());
+  await run(`setValue($('#assistant-input'), Array.from({ length: 12 }, (_, i) => '第' + (i + 1) + '行').join('\\n'))`);
+  await sleep(150);
+  check('手机：行数很多时输入框最高 120px，在框内滚动，末尾光标可见', await run(`const t = $('#assistant-input'); return Math.round(t.getBoundingClientRect().height) <= 120 && t.scrollHeight > t.clientHeight && t.scrollTop + t.clientHeight >= t.scrollHeight - 2`));
+  await run(`setValue($('#assistant-input'), '')`);
+  await sleep(150);
+  check('手机：清空后输入框恢复一行高度', await run(`return Math.abs($('#assistant-input').getBoundingClientRect().height - ${oneLine}) < 1`));
+  // 无头浏览器无法弹出真实键盘：把视口调矮，模拟可视区域变小
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 520, deviceScaleFactor: 2, mobile: true });
+  await sleep(400);
+  check('手机：可视区域变矮后助手贴合可视区域，输入框和最新内容仍可见', await run(`const a = $('.assistant').getBoundingClientRect(), f = $('.composer').getBoundingClientRect(); return Math.abs(a.height - visualViewport.height) < 2 && f.bottom <= visualViewport.height + 1`) && await latestVisible());
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await sleep(300);
+  check('手机：自动滚动不带动背后的商城页面', await run(`return document.body.style.top === ${JSON.stringify(lockedTop)} && document.body.style.top !== ''`));
 
   check('控制台没有错误或异常', problems.length === 0);
 

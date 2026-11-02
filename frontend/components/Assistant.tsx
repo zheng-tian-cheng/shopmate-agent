@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CATEGORIES } from '../lib/categories';
 import { AssistantStart, CategoryPicker } from './AssistantStart';
 import { MAX_COMPARE } from '../lib/compare';
@@ -11,6 +11,7 @@ import { quickOptions } from '../lib/quick-options';
 import { entryFromPath } from '../lib/routes';
 import type { Message } from '../lib/session';
 import { isSnapshotCurrent } from '../lib/session';
+import { useChatScroll, useVisibleViewport } from '../lib/use-chat-scroll';
 import { CompareTable } from './Compare';
 import { ConditionPanel } from './ConditionPanel';
 import { Price } from './ProductCard';
@@ -79,23 +80,29 @@ export function AssistantPanel() {
   const panelRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const followLatest = useRef(true);
+  const logRef = useRef<HTMLElement>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const categoryScroll = useRef(0);
-  const savedScroll = useRef(0);
-  const [readingHistory, setReadingHistory] = useState(false);
   const loading = status === 'loading';
   const engaged = messages.some(m => m.role === 'user');
   const options = quickOptions(state);
   const hasRecommendations = messages.some(m => m.recommendations !== undefined);
   useEffect(() => { setApplied(false); }, [state]);
   const home = !engaged && state.category === null;
+  const { readingHistory, scrollProps, followLatest } = useChatScroll({ body: bodyRef, log: logRef, header: contextRef }, open && !home && !debug && !choosingCategory);
+  useVisibleViewport(panelRef, open && !docked);
 
-
-  // 重新打开时回到上次的阅读位置（面板隐藏期间浏览器不保留滚动位置）
-  useEffect(() => {
-    if (!open || !bodyRef.current) return;
-    bodyRef.current.scrollTop = followLatest.current ? bodyRef.current.scrollHeight : savedScroll.current;
-  }, [open]);
+  // 输入框随内容增高，到 CSS max-height 后在框内滚动；光标在末尾时保持可见。只改输入框，不滚动聊天记录。
+  useLayoutEffect(() => {
+    const field = inputRef.current;
+    if (!field) return;
+    const top = field.scrollTop;
+    field.style.height = 'auto';
+    field.style.height = `${field.scrollHeight}px`;
+    const atEnd = document.activeElement === field && field.selectionEnd === field.value.length;
+    field.scrollTop = atEnd ? field.scrollHeight : top;
+  }, [input, home, debug, choosingCategory]);
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -113,18 +120,13 @@ export function AssistantPanel() {
     window.addEventListener('keydown', onKey);
     return () => { window.removeEventListener('keydown', onKey); requestAnimationFrame(() => { const target = previous?.isConnected ? previous : document.querySelector<HTMLElement>('.launcher'); target?.focus({ preventScroll: true }); }); };
   }, [open, dispatch, docked]);
-  // 只在原本贴近底部时跟随新消息；开关面板和阅读旧消息不改变滚动位置。
-  useEffect(() => {
-    if (!home && followLatest.current && bodyRef.current) {
-      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-    }
-  }, [messages.length, loading]);
+  // 对话页的阅读位置由 useChatScroll 恢复；这里只处理首页和品类选择之间的切换
   useEffect(() => {
     const body = bodyRef.current;
     if (!body) return;
     if (choosingCategory) {
       body.scrollTop = 0;
-    } else {
+    } else if (home) {
       body.scrollTop = categoryScroll.current;
     }
   }, [choosingCategory]);
@@ -132,25 +134,14 @@ export function AssistantPanel() {
     categoryScroll.current = bodyRef.current?.scrollTop ?? 0;
     setChoosingCategory(true);
   }
-  function trackScroll() {
-    const body = bodyRef.current;
-    if (!body) return;
-    followLatest.current = body.scrollHeight - body.scrollTop - body.clientHeight < 80;
-    savedScroll.current = body.scrollTop;
-    setReadingHistory(!followLatest.current);
-  }
-  function jumpToLatest() {
-    followLatest.current = true;
-    setReadingHistory(false);
-    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: 'smooth' });
-  }
-  function send(text: string) { if (!text.trim() || loading) return; dispatch({ type: 'sendText', text }); setInput(''); }
-  const composer = <form className="composer" onSubmit={e => { e.preventDefault(); send(input); }}><label className="sr-only" htmlFor="assistant-input">输入购物需求</label><textarea id="assistant-input" rows={1} maxLength={200} value={input} disabled={loading} placeholder={engaged ? '继续聊聊，或调整你的需求…' : '想买什么？说说你的需求…'} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(input); } }} /><button type="submit" className="send-button" aria-label="发送" disabled={!input.trim() || loading}>↑</button></form>;
+  // 用户主动发起的一轮（发送、快捷选项、重试）总是回到底部
+  function send(text: string) { if (!text.trim() || loading) return; followLatest(); dispatch({ type: 'sendText', text }); setInput(''); }
+  const composer = <form className="composer" onSubmit={e => { e.preventDefault(); send(input); }}><label className="sr-only" htmlFor="assistant-input">输入购物需求</label><textarea id="assistant-input" ref={inputRef} rows={1} maxLength={200} value={input} disabled={loading} placeholder={engaged ? '继续聊聊，或调整你的需求…' : '想买什么？说说你的需求…'} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(input); } }} /><button type="submit" className="send-button" aria-label="发送" disabled={!input.trim() || loading}>↑</button></form>;
   return <>
     {open && !docked && <div className="assistant-backdrop" onClick={() => dispatch({ type: 'closeAssistant' })} aria-hidden="true" />}
     <aside ref={panelRef} className={`assistant ${docked ? 'docked' : ''}`} role={docked ? 'complementary' : 'dialog'} aria-modal={docked ? undefined : true} aria-labelledby="assistant-title" hidden={!open}>
       <header className="assistant-head"><button type="button" className="assistant-back" aria-label="关闭 ShopMate，返回购物页面" onClick={() => dispatch({ type: 'closeAssistant' })}>‹ 返回商城</button><BrandMark small /><div className="title"><h2 id="assistant-title" ref={headingRef} tabIndex={-1}>ShopMate</h2><span>你的选购搭子 <span className="prototype-dot">· 开发原型</span></span></div><button className="more-button" aria-label={debug ? '返回对话' : '更多：开始新选购、原型调试'} aria-expanded={debug} onClick={() => { setChoosingCategory(false); setDebug(!debug); }}>{debug ? '完成' : '···'}</button></header>
-      <div className="assistant-body" ref={bodyRef} onScroll={trackScroll}>
+      <div className="assistant-body" ref={bodyRef} {...scrollProps}>
         {choosingCategory ? <CategoryPicker onBack={() => setChoosingCategory(false)} onSelect={() => { dispatch({ type: 'selectCategory', category: 'headphones' }); setChoosingCategory(false); }} /> : debug ? <section className="debug-panel"><h2>选购</h2><button className="button outline" onClick={() => { dispatch({ type: 'reset' }); setDebug(false); setInput(''); }}>开始新选购</button><p>清空助手里的条件和对话，重新开始；不影响商品列表的筛选。</p><h2>原型调试</h2><p>Gemini 理解自然语言，商品筛选由后端规则执行；尚未接入第三方评测与 RAG。</p><label className="check"><input type="checkbox" checked={failNext} onChange={() => dispatch({ type: 'toggleFailNext' })} />下一条输入模拟失败</label><h3>试试这样问</h3><div className="phrase-list">{DEMO_PHRASES.map(p => <button key={p} disabled={loading} onClick={() => { send(p); setDebug(false); }}>{p} ↗</button>)}</div></section> : <>
           {home ? <AssistantStart composer={composer} onBrowse={browseCategories} onPick={example => {
             // 只填入输入框，不发送、不写入购买条件；用户可以修改后再确认发送
@@ -161,14 +152,14 @@ export function AssistantPanel() {
               field?.setSelectionRange(example.length, example.length);
             });
           }} /> : <>
-            <div className="shopping-context" role="group" aria-label="当前选购品类"><span><small>正在选购</small>{state.category ? CATEGORIES[state.category].label : '未选品类'}</span>{viewed && <span className="viewing" data-viewed={viewed.id}><small>正在看</small>{viewed.name}</span>}<button onClick={browseCategories}>更换品类</button></div>
+            <div className="shopping-context" ref={contextRef} role="group" aria-label="当前选购品类"><span><small>正在选购</small>{state.category ? CATEGORIES[state.category].label : '未选品类'}</span>{viewed && <span className="viewing" data-viewed={viewed.id}><small>正在看</small>{viewed.name}</span>}<button onClick={browseCategories}>更换品类</button></div>
             <ConditionPanel key={`${state.category}:${JSON.stringify(state.conditions)}`} />
-            <section className="messages" role="log" aria-label="对话记录">{messages.map(m => <div key={m.id} className={`turn turn-${m.role}`}>
+            <section className="messages" ref={logRef} role="log" aria-label="对话记录">{messages.map(m => <div key={m.id} className={`turn turn-${m.role}`}>
               <div className={`message from-${m.role}`}>{m.text}</div>
               <MessageRefs message={m} />
               <RecommendationList message={m} />
               {m.details && m.details.length > 0 && <details className="change-log"><summary>条件变更详情</summary><ul>{m.details.map((d, i) => <li key={i}>{d}</li>)}</ul></details>}
-            </div>)}{loading && <div className="loading-line" role="status"><span className="spinner" />正在整理你的选择…</div>}{status === 'error' && <div className="error-line" role="alert">暂时没能完成，条件已保留。<button className="button outline small" onClick={() => dispatch({ type: 'retry' })}>重试</button></div>}</section>
+            </div>)}{loading && <div className="loading-line" role="status"><span className="spinner" />正在整理你的选择…</div>}{status === 'error' && <div className="error-line" role="alert">暂时没能完成，条件已保留。<button className="button outline small" onClick={() => { followLatest(); dispatch({ type: 'retry' }); }}>重试</button></div>}</section>
             {session.compareIds.length === 1 && <p className="compare-hint" role="status">已选 1 款，再选 1 款即可比较。</p>}
             {session.notice && <p className="compare-hint" role="status">{session.notice}</p>}
             {session.compareIds.length === MAX_COMPARE && <section className="assistant-section"><h2>两款放在一起看<button className="button ghost small" onClick={() => dispatch({ type: 'clearCompare' })}>清空</button></h2><CompareTable state={state} conditionLabel="助手当前条件" /></section>}
@@ -176,7 +167,7 @@ export function AssistantPanel() {
           </>}
         </>}
       </div>
-      {!debug && !home && !choosingCategory && <footer className="assistant-foot">{readingHistory && engaged && <button className="latest-message" onClick={jumpToLatest}>回到最新消息 ↓</button>}{options.length > 0 && <div className="quick-options" aria-label="快捷选项">{options.map(o => <button key={o.id} disabled={loading} onClick={() => dispatch({ type: 'uiChanges', label: o.label, changes: o.changes })}>{o.label}</button>)}</div>}{composer}<p className="prototype-caption">Gemini 理解需求 · 价格和参数以商品数据为准，暂无第三方评测</p></footer>}
+      {!debug && !home && !choosingCategory && <footer className="assistant-foot">{readingHistory && engaged && <button className="latest-message" onClick={() => followLatest('smooth')}>回到最新消息 ↓</button>}{options.length > 0 && <div className="quick-options" aria-label="快捷选项">{options.map(o => <button key={o.id} disabled={loading} onClick={() => { followLatest(); dispatch({ type: 'uiChanges', label: o.label, changes: o.changes }); }}>{o.label}</button>)}</div>}{composer}<p className="prototype-caption">Gemini 理解需求 · 价格和参数以商品数据为准，暂无第三方评测</p></footer>}
     </aside>
   </>;
 }

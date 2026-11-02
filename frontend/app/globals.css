@@ -388,7 +388,8 @@ summary { cursor: pointer; }
 .launcher > span:last-child { margin-left: 6px; font-size: 17px; font-weight: 400; }
 .assistant-open { overflow: hidden; }
 .assistant-backdrop { position: fixed; inset: 0; background: #1c25294d; z-index: 39; }
-.assistant { inset: 0; width: 100%; height: 100dvh; max-width: none; border: 0; background: #fcfcfa; box-shadow: none; color: var(--mall-text); }
+/* --assistant-top / --assistant-height：虚拟键盘弹出时贴合可视区域（use-chat-scroll.ts 设置），未设置时占满视口 */
+.assistant { inset: var(--assistant-top, 0px) 0 0; width: 100%; height: var(--assistant-height, 100dvh); max-width: none; border: 0; background: #fcfcfa; box-shadow: none; color: var(--mall-text); }
 .assistant-head { padding: max(12px, env(safe-area-inset-top)) 16px 12px 10px; gap: 9px; background: #fcfcfa; border-bottom: 1px solid #eeeee8; flex-shrink: 0; }
 .assistant-back { display: flex; align-items: center; justify-content: center; width: 35px; height: 42px; font-size: 35px; padding: 0 0 5px; color: #4e574f; }
 .assistant-head .title h2 { font-size: 17px; letter-spacing: -.5px; color: #275b43; outline: none; }
@@ -466,7 +467,7 @@ summary { cursor: pointer; }
   .product-card .product-key-spec { font-size: 12px; }
   .product-card .button.small { font-size: 12px; }
   .detail { grid-template-columns: 1fr 1fr; }
-  .assistant { inset: 20px 20px 20px auto; width: 480px; height: calc(100dvh - 40px); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 70px #18251b40; }
+  .assistant { inset: calc(var(--assistant-top, 0px) + 20px) 20px 20px auto; width: 480px; height: calc(var(--assistant-height, 100dvh) - 40px); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 70px #18251b40; }
   .assistant-body { padding: 22px; }
   
   .filter-panel { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
