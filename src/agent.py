@@ -153,10 +153,15 @@ def fact(p, field):
 
 FACT_FIELDS = {'name', 'priceCny', 'anc', 'ancSpec', 'wearingStyle', 'battery', 'weight', 'bluetooth'}
 PLACEHOLDER = re.compile(r'\{\{([^{}]+)\}\}')
+# Money placeholders render with their own “¥”; drop a sign before or a unit after them (“¥{{x.priceCny}}元” → “¥599”).
+MONEY = r'(\{\{(?:budget|[^{}]+\.priceCny)\}\})'
+EXTRA_SIGN, EXTRA_UNIT = re.compile(r'[¥￥]\s*' + MONEY), re.compile(MONEY + r'\s*(?:元|块钱|块)')
 CN_AMOUNT = re.compile(r'[零一二两三四五六七八九十百千万几]+个?\s*(?:元|块|小时|分钟|克|分贝|毫安)')
 
 
 def render_reply(text, seen, state, matches):
+    text = EXTRA_UNIT.sub(r'\1', EXTRA_SIGN.sub(r'\1', text))
+
     def replace(m):
         token = m.group(1)
         if token == 'budget':
@@ -187,6 +192,11 @@ def tool_error(e):
     if isinstance(e, KeyError):
         return '商品不存在。请使用catalog_identity_only中的准确id。本次调用未执行。'
     return f'{e}。本次调用未执行，不要声称已执行。'
+
+
+# Sent with update_conditions results that contain rejections, inside the same tool loop (no extra request).
+REJECTED_NOTE = ('rejected里的项没有生效，不能说已记录、已筛选或已考虑。code=invalid是调用方式不对，可按reason修正后重试；'
+                 '没有对应字段的需求（如外观、音乐风格）不要再写进条件，在回复里如实说暂时不能按它筛选，影响选择时简短澄清。')
 
 
 def redact(text):
@@ -351,6 +361,10 @@ async def run_agent(request: ChatRequest, model):
                         applied.extend(result['applied'])
                         rejected.extend(result['rejected'])
                         matches = None  # later changes invalidate earlier recommendations
+                        if result['rejected']:
+                            # Field names and fixed rule codes only; values may contain the user's words.
+                            log.info('chat=%s rejected=%s', chat_id, ','.join(f"{str(r['change'].get('field'))[:20]}:{r['code']}" for r in result['rejected']))
+                            result = dict(result, note=REJECTED_NOTE)
                     elif name == 'search_products':
                         if blocked_category or state['category'] != 'headphones':
                             raise ValueError('请先明确选择耳机品类')

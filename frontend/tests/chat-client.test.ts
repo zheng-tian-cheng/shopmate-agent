@@ -53,6 +53,25 @@ test('自由输入调用 /chat：带发送时的浏览商品；失败时条件�
   } finally { server.restore(); }
 });
 
+test('聊天结果：有要求没有处理时，详情用普通话说明，摘要显示数量，不出现技术原因', async () => {
+  const budget = { field: 'budget', status: 'confirmed', kind: 'soft', source: 'user', value: 600 };
+  const server = withFetch(body => Response.json(reply(body, {
+    state: { ...body.state, category: 'headphones', conditions: [budget] },
+    reply: '先按¥600左右找了几款。“酷炫”暂时没法用来筛选，你更在意外观还是听感？',
+    applied: [{ op: 'set', field: 'budget', kind: 'soft', value: 600 }],
+    rejected: [{ change: { op: 'set', field: 'scene', kind: 'soft', value: '酷炫动感' } as never, reason: '条件类别与字段不匹配', code: 'invalid' }],
+  })));
+  try {
+    let s = await reduce(initialSession(), { type: 'sendText', text: '想要一副600元左右的酷炫动感映月耳机' });
+    s = await reduce(s, { type: 'textResolved', requestId: s.assistant.pendingRequest!.id });
+    const message = s.assistant.messages.at(-1)!;
+    assert.equal(message.unhandled, 1);
+    assert.ok(message.details!.includes('「酷炫动感」没有记下。'));
+    assert.ok(![message.text, ...message.details!].some(t => /条件类别|字段|Schema|update_conditions/.test(t)));
+    assert.deepEqual(s.assistant.state.conditions, [budget]);
+  } finally { server.restore(); }
+});
+
 test('聊天结果：推荐理由按已生效条件生成，变更写入详情，比较放入对比栏；历史带每条消息当时的商品', async () => {
   const server = withFetch(body => {
     if (body.message === '300 以内') {

@@ -36,8 +36,8 @@ function isMapped(condition: Condition): condition is ActiveCondition {
   return false;
 }
 
-// 场景 B：用户点击“应用到商品列表”时，把能映射的已生效硬约束写回列表；
-// 列表筛选完全以助手的已生效硬约束为准，其余条件（场景、偏好、建议、待确认）列为无法映射。
+// 场景 B：用户点击“应用到商城筛选”时，把能映射的已生效硬约束写回列表；
+// 列表筛选完全以助手的已生效硬约束为准，其余条件（场景、偏好、建议、待确认）留在助手里，不写回列表。
 export function projectToPageFilters(state: ConditionState): { filters: PageFilters; unmapped: Condition[] } {
   const budget = getCondition(state, 'budget');
   const anc = getCondition(state, 'anc');
@@ -50,10 +50,21 @@ export function projectToPageFilters(state: ConditionState): { filters: PageFilt
   return { filters, unmapped: state.conditions.filter(c => !isMapped(c)) };
 }
 
+// 给用户看的商城筛选说明，如 ["¥200 以内", "支持主动降噪"]；没有可用于商城的条件时为空
 export function describePageFilters(filters: PageFilters): string[] {
   const parts: string[] = [];
-  if (filters.budgetMax !== null) parts.push(`预算 ≤ ${formatYuan(filters.budgetMax)}`);
-  if (filters.ancRequired) parts.push('必须支持主动降噪');
-  if (filters.excludeInEar) parts.push('排除入耳式');
+  if (filters.budgetMax !== null) parts.push(`${formatYuan(filters.budgetMax)} 以内`);
+  if (filters.ancRequired) parts.push('支持主动降噪');
+  if (filters.excludeInEar) parts.push('非入耳式');
   return parts;
+}
+
+// “按 ¥200 以内、支持主动降噪”：金额前留空格，文字直接相连
+export function byPageFilters(filters: PageFilters): string {
+  const text = describePageFilters(filters).join('、');
+  return `按${text.startsWith('¥') ? ' ' : ''}${text}`;
+}
+
+export function samePageFilters(a: PageFilters, b: PageFilters): boolean {
+  return a.budgetMax === b.budgetMax && a.ancRequired === b.ancRequired && a.excludeInEar === b.excludeInEar;
 }

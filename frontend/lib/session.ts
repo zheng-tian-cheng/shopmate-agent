@@ -9,14 +9,14 @@ import type { ShoppingCategory } from './categories.ts';
 // - assistant.state：用户确认过的购买条件（切换页面、切换商品都不清空）
 // - Message.productRefs / recommendations：每条消息生成时关联的商品，之后不随页面变化
 
-import type { ChangeOrigin, ConditionChange, ConditionField, ConditionState } from './conditions.ts';
+import type { ChangeOrigin, ConditionChange, ConditionField, ConditionState, Rejection } from './conditions.ts';
 import {
-  KIND_LABEL, applyChanges, confirmedConditions, describeCondition, describeValue, emptyState, getCondition,
+  KIND_LABEL, applyChanges, confirmedConditions, describeCondition, describeValue, emptyState, getCondition, rejectionNotes,
 } from './conditions.ts';
 import { toggleCompare } from './compare.ts';
 import { api } from './api.ts';
 import type { PageFilters } from './page-sync.ts';
-import { DEFAULT_PAGE_FILTERS, describePageFilters, projectToPageFilters, stateFromPageFilters } from './page-sync.ts';
+import { DEFAULT_PAGE_FILTERS, byPageFilters, describePageFilters, projectToPageFilters, samePageFilters, stateFromPageFilters } from './page-sync.ts';
 import { catalog, getProduct } from './products.ts';
 import { searchProducts } from './search.ts';
 
@@ -40,6 +40,8 @@ export interface Message {
   // 请求失败的回复：不作为对话历史发给模型
   failed?: boolean;
   details?: string[];
+  // 本轮没有处理的用户要求数量（聊天回复；说明在 details 里）
+  unhandled?: number;
   recommendations?: Recommendation[];
   matchCount?: number;
   // 这条消息讨论的商品，生成时确定，之后切换页面也不改变
@@ -110,7 +112,7 @@ export interface ChatResult {
   reply: string;
   state: ConditionState;
   applied: ConditionChange[];
-  rejected: { change: ConditionChange; reason: string }[];
+  rejected: Rejection[];
   recommendations: { productId: string; softMatched: ConditionField[] }[] | null;
   matchCount: number | null;
   productRefs: string[];
@@ -238,7 +240,7 @@ function conversationalText(result: Awaited<ReturnType<typeof applyChanges>>, be
     }
     if (change.op === 'ask') lines.push(`${change.question}在上方选一下就好。`);
   }
-  if (result.rejected.length) lines.push(`有 ${result.rejected.length} 项没有执行：${result.rejected.map(r => r.reason).join('；')}。`);
+  lines.push(...rejectionNotes(result.applied, result.rejected));
   return lines;
 }
 
@@ -251,11 +253,11 @@ function recommendationReasons(active: ReturnType<typeof confirmedConditions>, s
 }
 
 // 条件变更详情（界面上折叠显示）
-function changeDetails(result: { applied: ConditionChange[]; rejected: { reason: string }[] }, before: ConditionState, after: ConditionState): string[] {
+function changeDetails(result: { applied: ConditionChange[]; rejected: Rejection[] }, before: ConditionState, after: ConditionState, fromChat = false): string[] {
   const details = result.applied.map(change => describeApplied(change, before, after));
   const untouched = confirmedConditions(before).filter(c => !result.applied.some(change => change.field === c.field));
   if (result.applied.length && untouched.length) details.push('其他条件保持不变。');
-  for (const { reason } of result.rejected) details.push(`未执行：${reason}。`);
+  details.push(...rejectionNotes(result.applied, result.rejected, fromChat));
   return details;
 }
 
@@ -387,14 +389,16 @@ export async function reduce(s: ShopSession, action: ShopAction): Promise<ShopSe
       if (!pending || pending.id !== action.requestId) return s;
       const { result } = action;
       const before = s.assistant.state;
-      const details = changeDetails(result, before, result.state);
+      const details = changeDetails(result, before, result.state, true);
       if (result.matchCount !== null) details.push(`按已生效的条件，商品库中有 ${result.matchCount} 款符合。`);
       const active = confirmedConditions(result.state).filter(c => c.kind !== 'scene');
       let next = withAssistant(s, { state: result.state, pendingRequest: null, status: 'idle' });
       // 比较两款时放进对比栏，助手面板里显示结构化比较表
       if (result.compareIds) next = { ...next, compareIds: result.compareIds, notice: null };
+      const unhandled = rejectionNotes(result.applied, result.rejected, true).length;
       return say(next, 'assistant', result.reply, {
         viewedProductId: pending.context.viewedProductId, productRefs: result.productRefs, details,
+        ...(unhandled ? { unhandled } : {}),
         ...(result.recommendations === null ? {} : {
           matchCount: result.matchCount ?? 0,
           recommendations: result.recommendations.map(r => ({ productId: r.productId, reasons: recommendationReasons(active, r.softMatched) })),
@@ -435,13 +439,15 @@ export async function reduce(s: ShopSession, action: ShopAction): Promise<ShopSe
       return applyAndReport(say(supersedePending(opened), 'user', `找和「${product.name}」相似的款式`, { productRefs: [product.id] }), changes, 'system');
     }
 
+    // 场景 B：用户点“应用到商城筛选”后才写回商城（手动确认同步）。没有可写回的条件、或商城已经一致时不做任何事。
+    // 先按这组条件实际筛选一次商城商品：请求失败会抛出，商城筛选不变，也不提示成功（界面显示可重试的错误）。
+    // 场景、偏好和建议留在助手里，照常显示在条件栏中，不逐条解释为什么没有写回商城。
     case 'applyToList': {
       if (s.assistant.state.category !== 'headphones') return s;
-      const { filters, unmapped } = projectToPageFilters(s.assistant.state);
-      const applied = describePageFilters(filters);
-      const lines = [`已同步到商品列表：${applied.length ? applied.join('、') : '无筛选条件（列表显示全部商品）'}。`];
-      if (unmapped.length) lines.push(`以下条件无法应用到列表筛选，我会继续在这里帮你考虑：${unmapped.map(describeCondition).join('、')}。`);
-      return say({ ...s, pageFilters: filters }, 'assistant', lines.join('\n'));
+      const { filters } = projectToPageFilters(s.assistant.state);
+      if (!describePageFilters(filters).length || samePageFilters(filters, s.pageFilters)) return s;
+      await searchProducts(catalog(), await stateFromPageFilters(filters));
+      return say({ ...s, pageFilters: filters }, 'assistant', `商城已${byPageFilters(filters)}筛选商品。`);
     }
 
     case 'reset': {

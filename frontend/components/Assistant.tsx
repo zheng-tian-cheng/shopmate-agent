@@ -6,6 +6,7 @@ import { CATEGORIES } from '../lib/categories';
 import { AssistantStart, CategoryPicker } from './AssistantStart';
 import { MAX_COMPARE } from '../lib/compare';
 import { DEMO_PHRASES } from '../lib/demo-phrases';
+import { byPageFilters, describePageFilters, projectToPageFilters, samePageFilters } from '../lib/page-sync';
 import { getProduct } from '../lib/products';
 import { quickOptions } from '../lib/quick-options';
 import { entryFromPath } from '../lib/routes';
@@ -76,7 +77,6 @@ export function AssistantPanel() {
   const [input, setInput] = useState('');
   const [debug, setDebug] = useState(false);
   const [choosingCategory, setChoosingCategory] = useState(false);
-  const [applied, setApplied] = useState(false);
   const panelRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -88,7 +88,9 @@ export function AssistantPanel() {
   const engaged = messages.some(m => m.role === 'user');
   const options = quickOptions(state);
   const hasRecommendations = messages.some(m => m.recommendations !== undefined);
-  useEffect(() => { setApplied(false); }, [state]);
+  // 助手里能写回商城的条件（已生效的预算、降噪、佩戴要求）与商城当前筛选不同时，才需要“应用到商城筛选”
+  const mallFilters = projectToPageFilters(state).filters;
+  const canApply = state.category === 'headphones' && describePageFilters(mallFilters).length > 0 && !samePageFilters(mallFilters, session.pageFilters);
   const home = !engaged && state.category === null;
   const { readingHistory, scrollProps, followLatest } = useChatScroll({ body: bodyRef, log: logRef, header: contextRef }, open && !home && !debug && !choosingCategory);
   useVisibleViewport(panelRef, open && !docked);
@@ -158,12 +160,12 @@ export function AssistantPanel() {
               <div className={`message from-${m.role}`}>{m.text}</div>
               <MessageRefs message={m} />
               <RecommendationList message={m} />
-              {m.details && m.details.length > 0 && <details className="change-log"><summary>条件变更详情</summary><ul>{m.details.map((d, i) => <li key={i}>{d}</li>)}</ul></details>}
+              {m.details && m.details.length > 0 && <details className="change-log"><summary>条件变更详情{m.unhandled ? ` · ${m.unhandled} 项没有处理` : ''}</summary><ul>{m.details.map((d, i) => <li key={i}>{d}</li>)}</ul></details>}
             </div>)}{loading && <div className="loading-line" role="status"><span className="spinner" />正在整理你的选择…</div>}{status === 'error' && <div className="error-line" role="alert">暂时没能完成，条件已保留。<button className="button outline small" onClick={() => { followLatest(); dispatch({ type: 'retry' }); }}>重试</button></div>}</section>
             {session.compareIds.length === 1 && <p className="compare-hint" role="status">已选 1 款，再选 1 款即可比较。</p>}
             {session.notice && <p className="compare-hint" role="status">{session.notice}</p>}
             {session.compareIds.length === MAX_COMPARE && <section className="assistant-section"><h2>两款放在一起看<button className="button ghost small" onClick={() => dispatch({ type: 'clearCompare' })}>清空</button></h2><CompareTable state={state} conditionLabel="助手当前条件" /></section>}
-            {state.category === 'headphones' && hasRecommendations && !loading && status !== 'error' && <div className="sync-action"><button className="button outline" onClick={() => { dispatch({ type: 'applyToList' }); setApplied(true); }}>{applied ? '已同步到商品列表 ✓' : '应用到商品列表 ↗'}</button><p role="status">{applied ? '已同步预算与必需功能；偏好保留在助手中' : '点击后才会同步列表筛选'}</p></div>}
+            {canApply && hasRecommendations && !loading && status !== 'error' && <div className="sync-action"><button className="button outline" onClick={() => dispatch({ type: 'applyToList' })}>应用到商城筛选 ↗</button><p>应用后，商城将{byPageFilters(mallFilters)}筛选</p></div>}
           </>}
         </>}
       </div>

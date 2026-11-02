@@ -85,10 +85,17 @@ export const ALLOWED_OPS: Readonly<Record<ChangeOrigin, readonly ChangeOp[]>> = 
   system: ['suggest'],
 };
 
+// 后端拒绝一项操作时的说明（src/conditions.py）。code：invalid 调用方式不对 / rule 业务规则不允许；旧接口没有 code，按 rule 处理
+export interface Rejection {
+  change: ConditionChange;
+  reason: string;
+  code?: 'invalid' | 'rule';
+}
+
 export interface ApplyResult {
   state: ConditionState;
   applied: ConditionChange[];
-  rejected: { change: ConditionChange; reason: string }[];
+  rejected: Rejection[];
 }
 
 export const KIND_LABEL: Record<ConditionKind, string> = { hard: '必须满足', soft: '偏好', scene: '使用场景' };
@@ -212,6 +219,39 @@ export function describeValue(field: ConditionField, kind: ConditionKind, value:
     case 'scene':
       return `场景：${value as string}`;
   }
+}
+
+// 被拒绝的一项说的是什么，用来告诉用户哪项没有处理；认不出时返回 null
+function rejectedItem(change: ConditionChange): string | null {
+  const value = (change as { value?: unknown }).value;
+  if (change.field === 'scene' && typeof value === 'string' && value.trim()) return value.trim();
+  if (change.field === 'budget' && typeof value === 'number' && Number.isFinite(value)) return `预算 ${formatYuan(value)}`;
+  if (change.field === 'anc' && typeof value === 'boolean') return value ? '主动降噪' : '不要主动降噪';
+  const exclude = (value as { exclude?: unknown } | null)?.exclude;
+  if (change.field === 'wearingStyle' && Array.isArray(exclude) && exclude.length && exclude.every(x => typeof x === 'string')) return `排除${exclude.join('、')}`;
+  return null;
+}
+
+const RECORD_OPS = new Set<ChangeOp>(['set', 'update']);
+
+// 没有处理的要求，用普通用户能懂的话说明；技术原因只留在接口响应和服务端日志里。
+// invalid（调用方式不对）：本轮已用同样的值改正记下的不再提；没改正的只说哪项没记下，不展示技术原因。
+// rule（业务规则不允许）：原因本身是写给用户看的，照常说明。
+// fromChat：聊天回复里，建议和待确认问题是助手自己发起的，被拒绝时用户不需要知道；界面操作（如找相似款）照常说明。
+export function rejectionNotes(applied: readonly ConditionChange[], rejected: readonly Rejection[], fromChat = false): string[] {
+  const valueOf = (c: ConditionChange) => JSON.stringify((c as { value?: unknown }).value);
+  const notes = rejected
+    .filter(r => !fromChat || (r.change.op !== 'suggest' && r.change.op !== 'ask'))
+    .filter(r => r.code !== 'invalid' || !applied.some(a => a.field === r.change.field && valueOf(a) === valueOf(r.change)))
+    .map(r => {
+      const item = rejectedItem(r.change);
+      const recording = RECORD_OPS.has(r.change.op);
+      if (r.change.op === 'suggest') return `建议${item ? `「${item}」` : ''}没有加上${r.code === 'invalid' ? '' : `：${r.reason}`}。`;
+      const what = item ? `「${item}」` : recording ? '有一项要求' : '有一项操作';
+      const verb = recording ? '没有记下' : '没有执行';
+      return r.code === 'invalid' ? `${what}${verb}。` : `${what}${verb}：${r.reason}。`;
+    });
+  return [...new Set(notes)];
 }
 
 export function describeCondition(condition: Condition): string {

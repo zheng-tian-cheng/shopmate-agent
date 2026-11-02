@@ -93,6 +93,7 @@ class ApplyRequest(Model):
 class Rejected(Model):
     change: Change
     reason: str
+    code: Literal['invalid', 'rule']  # 见 conditions.py：调用方式不对 / 业务规则不允许
 
 
 class ApplyResponse(Model):

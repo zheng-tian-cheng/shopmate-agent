@@ -142,6 +142,7 @@ try {
   await sleep(100);
   check('“地铁通勤”推导出的降噪显示为“系统建议 · 未生效”', await run(`const c = $('.status-card.suggested'); return !!c && c.textContent.includes('必须支持主动降噪')`));
   check('只说了使用场景、建议还未生效时，不重复给出推荐', await run(`return !$('.rec-item')`));
+  check('只说使用场景：不出现“无法应用到列表筛选”之类的说明，也没有同步按钮', await run(`return !/无法应用|映射|硬约束|软偏好/.test($('.assistant').innerText) && !$('.sync-action')`));
   await shot('02-suggestion');
 
   await run(`byText('.status-card.suggested button', '设为必须').click()`);
@@ -168,13 +169,26 @@ try {
   check('多条消息后标题栏和输入区仍可见', await run(`const h = $('.assistant-head').getBoundingClientRect(), f = $('.assistant-foot').getBoundingClientRect(); return $('.assistant-head').contains(document.elementFromPoint(h.left + 60, h.top + h.height / 2)) && $('.assistant-foot').contains(document.elementFromPoint(f.left + 40, f.top + 20))`));
   await shot('03-exclude-in-ear');
 
-  await run(`byText('.sync-action button', '应用到商品列表').click()`);
+  const MALL_MESSAGES = `return [...document.querySelectorAll('.message')].filter(e => e.textContent.startsWith('商城已')).map(e => e.textContent)`;
+  check('应用前：按钮说明应用后商城的筛选，商城和聊天都还没有变化', await run(`return byText('.sync-action button', '应用到商城筛选').isConnected && $('.sync-action p').textContent === '应用后，商城将按 ¥600 以内、支持主动降噪、非入耳式筛选' && ![...document.querySelectorAll('.filter-panel input[type=checkbox]')].some(c => c.checked)`) && (await run(MALL_MESSAGES)).length === 0);
+  await run(`byText('.sync-action button', '应用到商城筛选').click()`);
   await sleep(300);
+  check('应用后：聊天里只有一句“商城已按…筛选商品”，同步按钮收起，不再重复提示', JSON.stringify(await run(MALL_MESSAGES)) === JSON.stringify(['商城已按 ¥600 以内、支持主动降噪、非入耳式筛选商品。']) && await run(`return !$('.sync-action') && !/无法应用|映射|硬约束|软偏好|已同步|偏好保留/.test($('.assistant').innerText)`));
   await run(`$('.assistant-back').click()`);
   await sleep(300);
   check('应用到列表：筛选变为 600 元 + 必须降噪 + 排除入耳式，显示 2 款', await run(`return $('.filter-panel input[type=number]').value === '600' && [...document.querySelectorAll('.filter-panel input[type=checkbox]')].every(c => c.checked) && $('.result-bar span').textContent === '2 款符合筛选'`));
   check('对比栏与悬浮入口不重叠', await run(`const a = $('.compare-tray').getBoundingClientRect(), b = $('.launcher').getBoundingClientRect(); return a.bottom <= b.top || b.bottom <= a.top || a.right <= b.left || b.right <= a.left`));
   await shot('04-applied');
+  // 连续修改预算：确认前商城不变，确认后商城和提示都更新为新预算
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  await sendText('预算降到 200 元，其他不变');
+  check('再改预算为 200：重新出现应用按钮，商城仍按 600 元显示，没有新的“商城已…”', await run(`return $('.sync-action p')?.textContent === '应用后，商城将按 ¥200 以内、支持主动降噪、非入耳式筛选' && $('.filter-panel input[type=number]').value === '600'`) && (await run(MALL_MESSAGES)).length === 1);
+  await run(`byText('.sync-action button', '应用到商城筛选').click()`);
+  await sleep(500);
+  check('确认后：商城改按 200 元筛选，列表价格都不超过 200 元，提示与之一致', (await run(MALL_MESSAGES)).at(-1) === '商城已按 ¥200 以内、支持主动降噪、非入耳式筛选商品。' && await run(`const prices = [...document.querySelectorAll('.product-card .price')].map(e => Number(e.textContent.replace(/[^0-9.]/g, ''))); return !$('.sync-action') && $('.filter-panel input[type=number]').value === '200' && prices.every(p => p > 0 && p <= 200) && $('.result-bar span').textContent === prices.length + ' 款符合筛选'`));
+  await run(`$('.assistant-back').click()`);
+  await sleep(300);
 
   // 手机：四个主验收状态，截图均为实际页面，另检查滚动恢复。
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
@@ -215,6 +229,7 @@ try {
   await sleep(1000);
   check('推荐卡片与列表共用图片映射，不用插画；推荐标题注明图片为演示示意', await run(`const arts = [...lastRec().querySelectorAll('.product-art')]; return arts.length === 3 && arts.every(a => a.matches('.product-photo, .product-placeholder')) && lastRec().querySelector('.rec-head').textContent.includes('图片为演示示意')`));
   check('手机上一张推荐卡片高度不超过 120px', await run(`return [...lastRec().querySelectorAll('.rec-item')].every(e => e.getBoundingClientRect().height <= 120)`));
+  check('只有参考预算和偏好、没有能用于商城筛选的条件时，不显示同步按钮', await run(`return !!lastRec() && !$('.sync-action')`));
   await shot('mobile-04-recommendations');
   await run(`$('.assistant-back').click()`);
   await sleep(300);
@@ -369,6 +384,17 @@ try {
   await sendText('想买沙发');
   check('未开放品类不修改耳机条件', await run(`return [...document.querySelectorAll('.message')].at(-1).textContent.includes('尚未开放') && ($('.condition-tags')?.textContent ?? '') === ${JSON.stringify(conditionsBeforeUnsupported)}`));
 
+  // 有要求没有处理：预算照常生效；没有对应字段的偏好说明“没有记下”，不显示技术原因
+  await go('/headphones');
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  await sendText('想要一副600元左右的酷炫动感映月耳机');
+  check('参考预算照常生效并给出推荐，没记下的偏好不进条件', await run(`const tags = $('.condition-tags').textContent; return tags.includes('预算 ¥600 左右') && !tags.includes('酷炫') && !!lastRec()`));
+  check('详情摘要提示有 1 项没有处理', await run(`return [...document.querySelectorAll('.change-log summary')].at(-1).textContent === '条件变更详情 · 1 项没有处理'`));
+  await run(`[...document.querySelectorAll('.change-log')].at(-1).open = true`);
+  await sleep(100);
+  check('展开详情：用普通话说明“酷炫动感”没有记下，不出现“条件类别与字段不匹配”等技术原因', await run(`const t = [...document.querySelectorAll('.change-log')].at(-1).textContent; return t.includes('「酷炫动感」没有记下。') && !/条件类别|字段|Schema|update_conditions/.test($('.assistant').innerText)`));
+
   // 聊天自动滚动：发送、回复、推荐卡片和比较表出现后都显示最新内容；用户上滑看历史时暂停，滚回底部或再次发送时恢复。
   // 只滚动聊天容器，商城页面不动。“等待回复期间上滑”用 CDP 暂停 /api/chat 请求来稳定复现。
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -471,6 +497,16 @@ try {
   await run(`$('.error-line button').click()`);
   await waitFor(`return !!lastRec()`);
   check('恢复后重试成功，给出推荐，错误提示消失', await run(`return !!lastRec() && !$('.error-line') && $('.condition-tags').textContent.includes('预算 ≤ ¥300')`));
+
+  // 应用到商城筛选失败：不提示成功，商城筛选不变；恢复后再点一次即可
+  await send('Network.setBlockedURLs', { urls: ['*/api/products/search'] });
+  await run(`byText('.sync-action button', '应用到商城筛选').click()`);
+  await sleep(800);
+  check('应用失败：不显示“商城已…”，商城筛选不变，提示可以再试', await run(`return ![...document.querySelectorAll('.message')].some(e => e.textContent.startsWith('商城已')) && $('.filter-panel input[type=number]').value === '' && $('.request-toast').textContent.includes('条件未改变') && !!$('.sync-action')`));
+  await send('Network.setBlockedURLs', { urls: [] });
+  await run(`byText('.sync-action button', '应用到商城筛选').click()`);
+  await sleep(800);
+  check('恢复后再应用：商城按 300 元筛选，提示成功一次', await run(`return [...document.querySelectorAll('.message')].filter(e => e.textContent.startsWith('商城已')).map(e => e.textContent).join('|') === '商城已按 ¥300 以内、支持主动降噪筛选商品。' && $('.filter-panel input[type=number]').value === '300' && !$('.sync-action')`));
   if (problems.length) console.log(problems.join('\n'));
   ws.close();
 } catch (error) {

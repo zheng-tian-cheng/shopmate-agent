@@ -10,6 +10,7 @@ import { quickOptions } from '../lib/quick-options.ts';
 import { evaluateProduct, searchProducts } from './reference/search.ts';
 import type { ShopAction, ShopSession } from '../lib/session.ts';
 import { initialSession, reduce } from '../lib/session.ts';
+import { createSessionController } from '../lib/session-controller.ts';
 
 // 这些用例针对业务规则，使用固定的虚构测试商品，不依赖真实商品数据
 setCatalogForTesting(MOCK_PRODUCTS);
@@ -171,11 +172,70 @@ test('完整模拟流程：列表 → 助手 → 确认建议 → 比较 → 改
   assert.match(lastMessage(s), /其他条件不变/);
   assert.ok(s.assistant.messages.at(-1)!.details!.includes('其他条件保持不变。'));
 
-  // 6. 应用到商品列表：硬约束写回，场景无法映射并说明
+  // 6. 应用到商城筛选：预算和降噪写回列表，只用一句话说明商城现在的筛选；场景留在助手里，不解释为什么没写回
   s = (await play(s, { type: 'applyToList' }));
   assert.deepEqual(s.pageFilters, { budgetMax: 200, ancRequired: true, excludeInEar: false });
   assert.deepEqual(s.pageFilters, projectToPageFilters(s.assistant.state).filters);
-  assert.match(lastMessage(s), /无法应用到列表筛选.*场景：地铁通勤/);
+  assert.equal(lastMessage(s), '商城已按 ¥200 以内、支持主动降噪筛选商品。');
+  assert.equal(activeValue(s.assistant.state, 'scene'), '地铁通勤');
+});
+
+test('应用到商城筛选：确认前不改商城，建议不会被写成必须条件，已一致时不重复提示', async () => {
+  let s = (await play(initialSession(), { type: 'openAssistant', entry: 'list' }));
+  s = (await send(s, '我每天坐地铁通勤'));
+  s = (await play(s, { type: 'uiChanges', label: '200 元以内', changes: [{ op: 'set', field: 'budget', kind: 'hard', value: 200 }] }));
+  // 尚未确认：商城筛选不变，聊天里没有“商城已…”
+  assert.deepEqual(s.pageFilters, { budgetMax: null, ancRequired: false, excludeInEar: false });
+  assert.ok(s.assistant.messages.every(m => !m.text.includes('商城已')));
+  // 确认后只写回预算；降噪还只是建议，不进商城筛选，也不出现在提示里
+  assert.equal(getCondition(s.assistant.state, 'anc')?.status, 'suggested');
+  s = (await play(s, { type: 'applyToList' }));
+  assert.deepEqual(s.pageFilters, { budgetMax: 200, ancRequired: false, excludeInEar: false });
+  assert.equal(lastMessage(s), '商城已按 ¥200 以内筛选商品。');
+  assert.ok(s.assistant.messages.every(m => !/无法应用|映射|硬约束|偏好保留|已同步/.test(m.text)));
+  // 已经一致：再点不重复提示
+  const count = s.assistant.messages.length;
+  s = (await play(s, { type: 'applyToList' }));
+  assert.equal(s.assistant.messages.length, count);
+  // 连续修改预算：确认前商城仍是 200，确认后变为 150
+  s = (await play(s, { type: 'uiChanges', label: '150 元以内', changes: [{ op: 'update', field: 'budget', value: 150 }] }));
+  assert.equal(s.pageFilters.budgetMax, 200);
+  s = (await play(s, { type: 'applyToList' }));
+  assert.equal(s.pageFilters.budgetMax, 150);
+  assert.equal(lastMessage(s), '商城已按 ¥150 以内筛选商品。');
+});
+
+test('应用失败（商城筛选请求失败）：不提示成功，商城筛选和对话都不变，界面收到可重试的错误', async () => {
+  const commits: ShopSession[] = [];
+  const errors: string[] = [];
+  const controller = createSessionController(s => { commits.push(s); }, (_busy, error) => { if (error) errors.push(error); });
+  await controller.dispatch({ type: 'openAssistant', entry: 'list' });
+  await controller.dispatch({ type: 'uiChanges', label: '200 元以内', changes: [{ op: 'set', field: 'budget', kind: 'hard', value: 200 }] });
+  const before = commits.at(-1)!;
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => String(url).endsWith('/products/search')
+    ? Response.json({ detail: '商品服务暂不可用' }, { status: 503 })
+    : originalFetch(url, init);
+  try {
+    await controller.dispatch({ type: 'applyToList' });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.equal(commits.at(-1), before);
+  assert.equal(before.pageFilters.budgetMax, null);
+  assert.deepEqual(errors, ['商品服务暂不可用']);
+  // 恢复后再点一次即可成功
+  await controller.dispatch({ type: 'applyToList' });
+  assert.equal(commits.at(-1)!.pageFilters.budgetMax, 200);
+  assert.equal(commits.at(-1)!.assistant.messages.at(-1)!.text, '商城已按 ¥200 以内筛选商品。');
+});
+
+test('没有能用于商城筛选的条件（只有场景和偏好）时，应用不做任何事', async () => {
+  let s = (await play(initialSession(), { type: 'openAssistant', entry: 'list' }));
+  s = (await send(s, '300 元左右，最好有降噪'));
+  const before = structuredClone(s);
+  s = (await play(s, { type: 'applyToList' }));
+  assert.deepEqual(s, before);
 });
 
 test('连续修改与关闭重开完整保留历史消息，只有主动重开选购才清空', async () => {

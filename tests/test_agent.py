@@ -10,7 +10,7 @@ from app import app
 from src.agent import get_model, run_agent, ChatError, GeminiModel, tool_declarations
 from src.agent_models import ChatRequest
 from src.conditions import empty_state, update_conditions
-from src.tools import PRODUCTS
+from src.tools import PRODUCTS, search_products
 
 
 def call(name, **args):
@@ -393,3 +393,58 @@ def test_live_check_reads_recommendation_objects():
     assert checks_main_1(r, None) == []
     r['recommendations'] = [dict(productId='sony-wh-ch720n', softMatched=[])]
     assert '推荐必须都在 300 元以内' in checks_main_1(r, None)
+
+
+def test_unmapped_preference_is_rejected_without_breaking_valid_conditions():
+    """“600元左右的酷炫动感耳机”：模型把“酷炫动感”误写成 soft 场景。预算照常记为参考预算，已有条件不变，这一项不生效；
+    拒绝原因和处理说明在同一轮工具结果里交给模型，不增加请求。"""
+    state = update_conditions(empty_state(), [change('anc', 'hard', True)], 'ui')['state']
+    expected = search_products(update_conditions(state, [change(kind='soft', value=600)], 'ui')['state'])['matches']
+    ids = [m['product']['id'] for m in expected[:3]]
+    result, model = run([response(call('update_conditions', changes=[change(kind='soft', value=600), change('scene', 'soft', '酷炫动感')])),
+                         response(call('search_products')),
+                         done('先按{{budget}}左右找了几款，可以看看下面这些。“酷炫”暂时没法用来筛选，你更在意外观还是听感？', recommend_ids=ids)],
+                        '想要一副600元左右的酷炫动感映月耳机', state)
+    assert len(model.inputs) == 3, '没有额外的模型请求'
+    assert [(c.field, c.kind, c.value) for c in result.state.conditions] == [('anc', 'hard', True), ('budget', 'soft', 600)]
+    assert [(r.code, r.reason, r.change.value) for r in result.rejected] == [('invalid', '条件类别与字段不匹配', '酷炫动感')]
+    assert result.tools[0].status == 'rejected'
+    seen = feedback(model, 0)[0]
+    assert seen['rejected'][0]['code'] == 'invalid' and '不能说已记录' in seen['note']
+    prices = [p['priceCny'] for i in ids for p in PRODUCTS if p['id'] == i]
+    assert prices == sorted(prices, key=lambda v: abs(v - 600)), '参考预算按接近 600 元排序，不是 600 元以内'
+    assert all('scene' not in r.softMatched for r in result.recommendations)
+    assert result.reply.startswith('先按¥600左右找了几款')
+
+
+def test_rejections_are_classified_for_users_and_the_model():
+    result = update_conditions(empty_state(), [change(value=200000), change('scene', 'soft', '酷炫'), change(value='六百'),
+                                               dict(op='update', field='anc', value=True)], 'interpreter')
+    assert [(r['code'], r['reason']) for r in result['rejected']] == [
+        ('rule', '预算需大于 0 且不超过 100000 元'), ('invalid', '条件类别与字段不匹配'),
+        ('invalid', '预算需为数字'), ('invalid', '没有已生效的条件可以修改')]
+    body = TestClient(app).post('/api/conditions/apply', json=dict(state=empty_state(), changes=[change('scene', 'soft', '酷炫')], origin='interpreter')).json()
+    assert body['rejected'][0]['code'] == 'invalid'
+
+
+def test_money_placeholders_do_not_double_currency_signs():
+    state = update_conditions(empty_state(), [change(kind='soft', value=600)], 'ui')['state']
+    result, _ = run([response(call('get_product', product_id='huawei-freebuds-6i')),
+                     done('{{huawei-freebuds-6i.name}}只要¥{{huawei-freebuds-6i.priceCny}}元，在你￥{{budget}}元左右的预算内。', product_refs=['huawei-freebuds-6i'])],
+                    '这款多少钱', state)
+    name = next(p['displayName'] for p in PRODUCTS if p['id'] == 'huawei-freebuds-6i')
+    assert result.reply == f'{name}只要¥599，在你¥600左右的预算内。'
+
+
+def test_rejection_log_has_field_and_code_but_not_user_words(caplog):
+    caplog.set_level('INFO', logger='shopmate.agent')
+    run([response(call('update_conditions', changes=[change('scene', 'soft', '酷炫动感映月')])), done('外观暂时没法筛选，你更在意什么？')],
+        '想要酷炫动感映月耳机', empty_state())
+    assert 'rejected=scene:invalid' in caplog.text and '酷炫' not in caplog.text
+
+
+def test_prompt_keeps_prose_and_cards_apart_and_unmapped_needs_out_of_conditions():
+    # 提示词约束（模型是否遵守需要真实模型检查）：正文不罗列卡片商品、占位符前后不重复货币符号、无字段的需求不写进条件
+    from src.agent_config import SYSTEM_PROMPT
+    for rule in ('正文不要逐个罗列推荐商品和价格', '前后不要再写¥或元', '没有对应字段的需求不写进条件', '不要拆成偏好', '不必每个形容词都追问'):
+        assert rule in SYSTEM_PROMPT

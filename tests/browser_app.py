@@ -41,6 +41,10 @@ class BrowserModel:
             elif text == '300 元左右，最好有降噪':
                 set_('budget', 'soft', 300)
                 set_('anc', 'soft', True)
+            elif text == '想要一副600元左右的酷炫动感映月耳机':
+                # 模拟模型把没有对应字段的偏好误写成 soft 场景：后端拒绝这一项，预算照常生效
+                set_('budget', 'soft', 600)
+                set_('scene', 'soft', '酷炫动感')
             elif text in ('Redmi Buds 6 和 OPPO Enco Air4 有什么区别？', 'compare-fixture'):
                 self.turns = [call('compare_products', product_ids=['redmi-buds-6', 'oppo-enco-air4']), call('respond', text='{{redmi-buds-6.name}}的价格是{{redmi-buds-6.priceCny}}，{{oppo-enco-air4.name}}的价格是{{oppo-enco-air4.priceCny}}。', product_refs=['redmi-buds-6', 'oppo-enco-air4'])]
             elif text == '那它的续航怎么样？':
