@@ -1,7 +1,7 @@
-// 第 1 阶段模拟交互流程的浏览器检查：用本机 Chrome（无界面）实际点击页面并断言结果。
+// 浏览器回归：真实前端、HTTP、Python工具；模型用 tests/browser_app.py 的明确测试替身。
 // 用法：先 `npm run build && npm run start`，再在另一个终端运行 `npm run check:browser`。
 // 环境变量：BASE_URL（默认 http://127.0.0.1:3000）、CHROME_PATH（默认 macOS 的 Chrome 路径）、
-// SCREENSHOT_DIR（可选，设置后保存截图）。只验证模拟流程，不代表 LLM 或 RAG 能力。
+// SCREENSHOT_DIR（可选，设置后保存截图）。聊天使用测试替身模型，不代表真实 Gemini 的理解能力。
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -15,8 +15,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 try {
   await fetch(BASE);
+  const mode = await fetch(BASE + '/api/test-mode').then(r => r.json());
+  if (mode.model !== 'fixture') throw new Error('浏览器回归必须连接 tests.browser_app，避免消耗真实 Gemini 额度');
 } catch {
-  console.error(`无法访问 ${BASE}，请先运行 npm run build && npm run start`);
+  console.error(`无法访问测试服务 ${BASE}；请按 README 启动 tests.browser_app 和对应前端。`);
   process.exit(1);
 }
 
@@ -227,6 +229,8 @@ try {
   check('耳机对话页有独立更换品类入口', await run(`return $('.shopping-context').textContent.includes('更换品类') && !$('.condition-form')`));
   check('选择蓝牙耳机后，聊天中留下说明', await run(`return [...document.querySelectorAll('.message')].some(e => e.textContent.includes('我们来挑蓝牙耳机'))`));
   await sendText('300 元以内，地铁通勤，需要主动降噪');
+  check('聊天推荐卡片显示满足的条件，变更详情列出实际改动', await run(`const l = lastRec(); return !!l && !!l.querySelector('.rec-reasons')?.textContent.includes('预算 ≤ ¥300') && [...document.querySelectorAll('.change-log')].at(-1).textContent.includes('已设置：预算 ≤ ¥300')`));
+  check('助手里不再有“未接入大模型”“固定话术”等过时提示', await run(`return !/未接入大模型|Mock 原型|固定话术/.test($('.assistant').innerText)`));
   await shot('assistant-03-conversation');
   await sendText('预算降到 200 元，其他不变');
   check('条件变化后旧推荐标为“之前的推荐”，只有最新一轮是当前推荐', await run(`const lists = [...document.querySelectorAll('.rec-list')]; return lists.length === 2 && lists[0].dataset.current === 'false' && lists[0].textContent.includes('之前的推荐') && lists[1].dataset.current === 'true'`));
@@ -338,6 +342,19 @@ try {
   check('重新打开助手：聊天记录和购买条件都保留，当前商品更新', await run(`return document.querySelectorAll('.message').length === ${mobileMessages} && $('.condition-tags').textContent.includes('预算 ≤ ¥300') && $('.shopping-context .viewing').dataset.viewed === ${JSON.stringify(target.split('/').pop())}`));
   await shot('10-mobile-reopen');
 
+  // Chat endpoint is exercised with a deterministic SDK response fixture, not a real model.
+  await go('/headphones');
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  await sendText('Redmi Buds 6 和 OPPO Enco Air4 有什么区别？');
+  await waitFor(`return !!$('.assistant .compare-table')`);
+  check('聊天比较调用后端并展示两款结构化比较', await run(`return !!$('.assistant .compare-table') && $('.messages').textContent.includes('¥199') && $('.messages').textContent.includes('¥169')`));
+  await sendText('那它的续航怎么样？');
+  check('比较后不明确的“它”先澄清', await run(`return [...document.querySelectorAll('.message')].at(-1).textContent.includes('你是指 Redmi Buds 6 还是 OPPO Enco Air4')`));
+  const conditionsBeforeUnsupported = await run(`return $('.condition-tags')?.textContent ?? ''`);
+  await sendText('想买沙发');
+  check('未开放品类不修改耳机条件', await run(`return [...document.querySelectorAll('.message')].at(-1).textContent.includes('尚未开放') && ($('.condition-tags')?.textContent ?? '') === ${JSON.stringify(conditionsBeforeUnsupported)}`));
+
   check('控制台没有错误或异常', problems.length === 0);
 
   // 后端请求失败：显示可重试的错误，不显示“没有符合条件的商品”（放在最后，避免预期内的网络错误影响上面的控制台检查）
@@ -349,6 +366,17 @@ try {
   await run(`$('.request-state.error button').click()`);
   await sleep(1200);
   check('后端恢复后点“重新筛选”即可正常显示商品', await run(`return document.querySelectorAll('.product-card').length === 15`));
+
+  // 聊天请求失败：显示错误和重试，条件不变；恢复后点重试即可完成
+  await send('Network.setBlockedURLs', { urls: ['*/api/chat'] });
+  await run(`$('.launcher').click()`);
+  await sleep(300);
+  await sendText('300 元以内，地铁通勤，需要主动降噪');
+  check('聊天请求失败：提示可重试，条件没有改变', await run(`return !!$('.error-line button') && [...document.querySelectorAll('.message')].at(-1).textContent.includes('无法连接') && !$('.condition-tags')?.textContent.includes('¥300')`));
+  await send('Network.setBlockedURLs', { urls: [] });
+  await run(`$('.error-line button').click()`);
+  await waitFor(`return !!lastRec()`);
+  check('恢复后重试成功，给出推荐，错误提示消失', await run(`return !!lastRec() && !$('.error-line') && $('.condition-tags').textContent.includes('预算 ≤ ¥300')`));
   if (problems.length) console.log(problems.join('\n'));
   ws.close();
 } catch (error) {

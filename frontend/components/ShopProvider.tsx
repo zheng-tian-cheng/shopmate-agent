@@ -1,5 +1,5 @@
 'use client';
-import { createContext, use, useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react';
+import { createContext, use, useEffect, useState, useCallback, useSyncExternalStore } from 'react';
 import type { Dispatch, ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import type { RawCatalog } from '../lib/api';
@@ -9,7 +9,8 @@ import type { Match, Evaluation } from '../lib/search';
 import { getProduct } from '../lib/products';
 import { entryFromPath } from '../lib/routes';
 import type { ShopAction, ShopSession } from '../lib/session';
-import { MOCK_LATENCY_MS, initialSession, reduce } from '../lib/session';
+import { initialSession } from '../lib/session';
+import { createSessionController } from '../lib/session-controller';
 import { ServiceState } from './RequestState';
 
 const ShopContext = createContext<{ session: ShopSession; dispatch: Dispatch<ShopAction>; docked: boolean; matches: Match[]; evaluations: Record<string, Evaluation> } | null>(null);
@@ -41,36 +42,19 @@ function useDelayed(active: boolean, delay: number): boolean {
 export function ShopProvider({ children, initialCatalog = null }: { children: ReactNode; initialCatalog?: RawCatalog | null }) {
   const [initialProducts] = useState(() => (initialCatalog ? hydrateCatalog(initialCatalog) : null));
   const [session, setSession] = useState(initialSession);
-  const current = useRef(session);
-  const queue = useRef(Promise.resolve());
-  const revision = useRef(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const catalogRequest = useRequest(initialProducts ? 'catalog:server' : 'catalog', initialProducts ? async () => initialProducts : loadCatalog);
   const products = initialProducts ?? catalogRequest.value;
   const assistantSearch = useRequest(JSON.stringify(session.assistant.state), () => search(session.assistant.state));
+  const [controller] = useState(() => createSessionController(setSession, (active, message) => {
+    setBusy(active);
+    if (message) setError(message);
+  }));
   const dispatch = useCallback((action: ShopAction) => {
-    if (['uiChanges', 'reset', 'selectCategory', 'findSimilar'].includes(action.type)) revision.current++;
-    const version = revision.current;
-    queue.current = queue.current.then(async () => {
-      if (action.type === 'textResolved' && version !== revision.current) return;
-      setBusy(true);
-      setError(null);
-      try {
-        const next = await reduce(current.current, action);
-        if (action.type === 'textResolved' && version !== revision.current) return;
-        current.current = next;
-        setSession(next);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : '请求失败，请重试');
-        if (action.type === 'textResolved') {
-          const old = current.current;
-          current.current = { ...old, assistant: { ...old.assistant, status: 'error', lastFailedText: old.assistant.pendingRequest?.text ?? null, pendingRequest: null } };
-          setSession(current.current);
-        }
-      } finally { setBusy(false); }
-    });
-  }, []);
+    setError(null);
+    void controller.dispatch(action);
+  }, [controller]);
   const pending = session.assistant.pendingRequest;
   const open = session.assistant.open;
   const docked = useDockedLayout();
@@ -82,10 +66,10 @@ export function ShopProvider({ children, initialCatalog = null }: { children: Re
     dispatch({ type: 'viewPage', productId: productId && getProduct(productId) ? productId : null });
   }, [pathname, products, dispatch]);
 
-  // 模拟请求等待；请求被作废或会话重置时清除计时器，迟到的结果由 reducer 忽略
+  // 发起聊天请求（在队列外等待，见 session-controller）；新的条件操作使旧结果失效。
   useEffect(() => {
     if (!pending) return;
-    const timer = setTimeout(() => dispatch({ type: 'textResolved', requestId: pending.id }), MOCK_LATENCY_MS);
+    const timer = setTimeout(() => dispatch({ type: 'textResolved', requestId: pending.id }), 0);
     return () => clearTimeout(timer);
   }, [pending]);
 

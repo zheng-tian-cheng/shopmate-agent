@@ -74,7 +74,7 @@ test('没有当前浏览商品时，“它”无法确定：请用户澄清，�
   s = (await ask(s, '它的续航怎么样'));
   assert.match(last(s).text, /是指哪一款/);
   assert.deepEqual(last(s).productRefs, []);
-  assert.equal(s.assistant.state, before);
+  assert.deepEqual(s.assistant.state, before);
 });
 
 test('请求带的是发送时的上下文：等待期间切换商品，回答仍针对发送时正在看的商品', async () => {
@@ -107,6 +107,6 @@ test('固定话术仍按原规则改条件；商品提问不改变任何条件',
   const conditions = s.assistant.state;
   assert.equal(conditions.conditions.length, 3);
   s = (await ask(s, '它的蓝牙版本是多少'));
-  assert.equal(s.assistant.state, conditions);
+  assert.deepEqual(s.assistant.state, conditions);
   assert.match(last(s).text, /蓝牙版本：商品数据里没有这一项/);
 });

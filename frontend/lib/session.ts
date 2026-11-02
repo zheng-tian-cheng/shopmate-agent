@@ -1,27 +1,24 @@
 import { CATEGORIES } from './categories.ts';
 import type { ShoppingCategory } from './categories.ts';
 // 模拟购物会话：商品列表筛选、助手条件、对话与对比栏。
-// 用纯函数 reducer 表达全部交互，界面组件只负责派发动作和渲染，便于自动化测试整条模拟流程。
-// 第 1 阶段：文字输入经固定话术解释（非 LLM），等待时间是模拟的；助手回复是模板文字，标记为 demo。
+// 异步状态转换调用后端；界面负责派发动作、保存会话与渲染。
+// 自由输入调用 Gemini；明确的 UI 操作调用 Python 条件服务。
 //
 // 三类状态分开保存：
 // - viewedProductId：当前浏览的商品（跟随页面路由，首页和列表为 null）
 // - assistant.state：用户确认过的购买条件（切换页面、切换商品都不清空）
 // - Message.productRefs / recommendations：每条消息生成时关联的商品，之后不随页面变化
 
-import type { ChangeOrigin, ConditionChange, ConditionState } from './conditions.ts';
+import type { ChangeOrigin, ConditionChange, ConditionField, ConditionState } from './conditions.ts';
 import {
   KIND_LABEL, applyChanges, confirmedConditions, describeCondition, describeValue, emptyState, getCondition,
 } from './conditions.ts';
 import { toggleCompare } from './compare.ts';
-import { interpretDemo } from './demo-phrases.ts';
+import { api } from './api.ts';
 import type { PageFilters } from './page-sync.ts';
 import { DEFAULT_PAGE_FILTERS, describePageFilters, projectToPageFilters, stateFromPageFilters } from './page-sync.ts';
-import { answerProductQuestion } from './product-context.ts';
 import { catalog, getProduct } from './products.ts';
 import { searchProducts } from './search.ts';
-
-export const MOCK_LATENCY_MS = 600;
 
 export type Entry = 'home' | 'list' | 'detail';
 
@@ -38,6 +35,10 @@ export interface Message {
   role: 'user' | 'assistant';
   text: string;
   demo: boolean;
+  // 发送时正在看的商品（随历史一起发给模型）
+  viewedProductId?: string | null;
+  // 请求失败的回复：不作为对话历史发给模型
+  failed?: boolean;
   details?: string[];
   recommendations?: Recommendation[];
   matchCount?: number;
@@ -54,6 +55,8 @@ export interface RequestContext {
 
 export interface PendingRequest {
   id: number;
+  // 这条用户消息的 id；只把它之前的对话作为历史
+  messageId: number;
   text: string;
   fail: boolean;
   context: RequestContext;
@@ -90,6 +93,8 @@ export type ShopAction =
   | { type: 'selectCategory'; category: ShoppingCategory }
   | { type: 'sendText'; text: string }
   | { type: 'textResolved'; requestId: number }
+  | { type: 'chatResolved'; requestId: number; result: ChatResult }
+  | { type: 'chatFailed'; requestId: number; message: string }
   | { type: 'retry' }
   | { type: 'toggleFailNext' }
   | { type: 'uiChanges'; changes: ConditionChange[]; label: string }
@@ -99,6 +104,19 @@ export type ShopAction =
   | { type: 'toggleCompare'; productId: string }
   | { type: 'clearCompare' }
   | { type: 'dismissNotice' };
+
+// POST /api/chat 的成功响应，字段与 src/agent_models.py 的 ChatResponse 一致
+export interface ChatResult {
+  reply: string;
+  state: ConditionState;
+  applied: ConditionChange[];
+  rejected: { change: ConditionChange; reason: string }[];
+  recommendations: { productId: string; softMatched: ConditionField[] }[] | null;
+  matchCount: number | null;
+  productRefs: string[];
+  compareIds: string[] | null;
+  tools: { name: string; status: 'ok' | 'rejected'; message?: string }[];
+}
 
 function initialAssistant(): AssistantSession {
   return {
@@ -125,7 +143,7 @@ function withAssistant(s: ShopSession, patch: Partial<AssistantSession>): ShopSe
 
 function say(s: ShopSession, role: Message['role'], text: string, extra: Partial<Message> = {}): ShopSession {
   const id = s.msgSeq + 1;
-  const message: Message = { ...extra, id, role, text, demo: role === 'assistant' };
+  const message: Message = { id, role, text, demo: false, ...extra };
   return { ...withAssistant(s, { messages: [...s.assistant.messages, message] }), msgSeq: id };
 }
 
@@ -224,15 +242,28 @@ function conversationalText(result: Awaited<ReturnType<typeof applyChanges>>, be
   return lines;
 }
 
-async function applyAndReport(s: ShopSession, changes: ConditionChange[], origin: ChangeOrigin): Promise<ShopSession> {
-  const before = s.assistant.state;
-  const result = await applyChanges(before, changes, origin);
-  const after = result.state;
+// 推荐卡片上的理由：满足的必须条件和命中的偏好，最多两条
+function recommendationReasons(active: ReturnType<typeof confirmedConditions>, softMatched: readonly string[]): string[] {
+  return active
+    .filter(c => c.kind === 'hard' || softMatched.includes(c.field))
+    .map(c => `${c.kind === 'soft' ? '偏好：' : ''}${describeCondition(c)}`)
+    .slice(0, 2);
+}
 
+// 条件变更详情（界面上折叠显示）
+function changeDetails(result: { applied: ConditionChange[]; rejected: { reason: string }[] }, before: ConditionState, after: ConditionState): string[] {
   const details = result.applied.map(change => describeApplied(change, before, after));
   const untouched = confirmedConditions(before).filter(c => !result.applied.some(change => change.field === c.field));
   if (result.applied.length && untouched.length) details.push('其他条件保持不变。');
   for (const { reason } of result.rejected) details.push(`未执行：${reason}。`);
+  return details;
+}
+
+async function applyAndReport(s: ShopSession, changes: ConditionChange[], origin: ChangeOrigin): Promise<ShopSession> {
+  const before = s.assistant.state;
+  const result = await applyChanges(before, changes, origin);
+  const after = result.state;
+  const details = changeDetails(result, before, after);
 
   const lines = conversationalText(result, before);
   const extra: Partial<Message> = { details };
@@ -247,11 +278,7 @@ async function applyAndReport(s: ShopSession, changes: ConditionChange[], origin
       details.push(`按已生效的条件，商品库中有 ${matches.length} 款符合。`);
       extra.matchCount = matches.length;
       extra.recommendations = matches.slice(0, RECOMMEND_LIMIT).map(({ product, evaluation }) => ({
-        productId: product.id,
-        reasons: active
-          .filter(c => c.kind === 'hard' || evaluation.softMatched.includes(c.field))
-          .map(c => `${c.kind === 'soft' ? '偏好：' : ''}${describeCondition(c)}`)
-          .slice(0, 2),
+        productId: product.id, reasons: recommendationReasons(active, evaluation.softMatched),
       }));
       lines.push(matches.length
         ? '按现在的条件，先看看这几款：'
@@ -262,14 +289,14 @@ async function applyAndReport(s: ShopSession, changes: ConditionChange[], origin
   return say(withAssistant(s, { state: after, status: 'idle' }), 'assistant', lines.join('\n'), extra);
 }
 
-// 推荐快照是否仍是“当前有效推荐”：必须是最后一轮推荐，且与按当前条件重新筛选的结果一致。
-// 条件或品类变化后，旧快照只作为历史保留。
+// 推荐快照是否仍是“当前有效推荐”：必须是最后一轮推荐，且与按当前条件重新筛选的结果一致
+// （符合数量相同，展示的商品都仍然符合；助手可能只挑其中几款展示）。条件或品类变化后，旧快照只作为历史保留。
 export function isSnapshotCurrent(message: Message, assistant: AssistantSession, matches: import('./search.ts').Match[]): boolean {
   if (!message.recommendations) return false;
   const latest = [...assistant.messages].reverse().find(m => m.recommendations !== undefined);
   if (latest?.id !== message.id || assistant.state.category === null) return false;
-  return matches.length === message.matchCount
-    && matches.slice(0, RECOMMEND_LIMIT).every((m, i) => m.product.id === message.recommendations![i]?.productId);
+  const ids = new Set(matches.map(m => m.product.id));
+  return matches.length === message.matchCount && message.recommendations.every(r => ids.has(r.productId));
 }
 
 // 切换选购品类只保留通用预算；场景、专属条件、建议及对比项不跨品类带入。
@@ -278,6 +305,38 @@ function selectCategory(s: ShopSession, category: ShoppingCategory): ShopSession
   if (s.assistant.state.category === category) return s;
   const state = { ...emptyState(category), conditions: s.assistant.state.conditions.filter(c => c.field === 'budget') };
   return { ...withAssistant(s, { state, pendingRequest: null, status: 'idle' }), compareIds: [], notice: null };
+}
+
+// 发给模型的历史：这条消息之前的对话，去掉失败的轮次（失败回复和对应的提问）。
+// 每条带上当时关联的商品和正在看的商品，之后切换页面不会改变。
+function chatHistory(messages: Message[], before: number) {
+  const history: Message[] = [];
+  for (const m of messages) {
+    if (m.id >= before) break;
+    if (m.failed) {
+      if (history.at(-1)?.role === 'user') history.pop();
+      continue;
+    }
+    history.push(m);
+  }
+  return history.slice(-30).map(m => ({
+    role: m.role, text: m.text, viewedProductId: m.viewedProductId ?? null,
+    productRefs: [...new Set([...(m.productRefs ?? []), ...(m.recommendations ?? []).map(r => r.productId)])],
+  }));
+}
+
+// 发送聊天请求，返回要应用的结果动作（成功或失败）。条件和上下文都用发送时的快照。
+export async function requestChat(s: ShopSession, pending: PendingRequest): Promise<ShopAction> {
+  if (pending.fail) return { type: 'chatFailed', requestId: pending.id, message: '这次模拟请求失败了。你的条件没有改变，可以点击“重试”。' };
+  try {
+    const result = await api<ChatResult>('/chat', {
+      message: pending.text, state: s.assistant.state, viewedProductId: pending.context.viewedProductId,
+      history: chatHistory(s.assistant.messages, pending.messageId),
+    });
+    return { type: 'chatResolved', requestId: pending.id, result };
+  } catch (error) {
+    return { type: 'chatFailed', requestId: pending.id, message: error instanceof Error ? error.message : '聊天请求失败，条件未改变，请重试。' };
+  }
 }
 
 export async function reduce(s: ShopSession, action: ShopAction): Promise<ShopSession> {
@@ -310,31 +369,44 @@ export async function reduce(s: ShopSession, action: ShopAction): Promise<ShopSe
       const id = started.seq + 1;
       const context = buildRequestContext(started);
       const next = withAssistant({ ...started, seq: id }, {
-        status: 'loading', pendingRequest: { id, text, fail: started.assistant.failNext, context }, lastFailedText: null, failNext: false,
+        status: 'loading', pendingRequest: { id, messageId: started.msgSeq + 1, text, fail: started.assistant.failNext, context }, lastFailedText: null, failNext: false,
       });
-      return say(next, 'user', text);
+      return say(next, 'user', text, { viewedProductId: context.viewedProductId });
     }
 
+    // 单独调用 reduce 时直接等待请求；界面里由 session-controller 在队列外请求，再把结果应用到最新状态
     case 'textResolved': {
       const pending = s.assistant.pendingRequest;
       if (!pending || pending.id !== action.requestId) return s;
-      let next = withAssistant(s, { pendingRequest: null, status: 'idle' });
-      if (pending.fail) {
-        return say(withAssistant(next, { status: 'error', lastFailedText: pending.text }), 'assistant',
-          '这次模拟请求失败了。你的条件没有改变，可以点击“重试”。');
-      }
-      const result = interpretDemo(pending.text);
-      if (!result) {
-        // 关于某款商品参数的提问：按发送时的浏览商品理解“它”，用户明确提到的型号优先
-        const answer = answerProductQuestion(pending.text, pending.context.viewedProductId, catalog());
-        if (answer) return say(next, 'assistant', answer.text, { productRefs: answer.productRefs, details: answer.details });
-        return say(next, 'assistant', '这句话不在固定话术范围内，条件没有改变。当前原型尚未接入 LLM，像“400 以内”这样的自由说法要等接入后才能理解。现在可以点下方的快捷选项，或在右上角「···」里选一句可识别的表达。');
-      }
-      if (result.type === 'unsupported-category') {
-        return say(next, 'assistant', `当前只支持蓝牙耳机，${result.category}属于后续品类。耳机的条件不会用于其他品类，也没有改变。`);
-      }
-      if (next.assistant.state.category === null && result.changes.some(c => c.field === 'anc' || c.field === 'wearingStyle')) next = selectCategory(next, 'headphones');
-      return applyAndReport(next, result.changes, 'interpreter');
+      return reduce(s, await requestChat(s, pending));
+    }
+
+    // 只应用仍在等待的请求；被新的条件操作作废后，迟到的结果不会覆盖新条件
+    case 'chatResolved': {
+      const pending = s.assistant.pendingRequest;
+      if (!pending || pending.id !== action.requestId) return s;
+      const { result } = action;
+      const before = s.assistant.state;
+      const details = changeDetails(result, before, result.state);
+      if (result.matchCount !== null) details.push(`按已生效的条件，商品库中有 ${result.matchCount} 款符合。`);
+      const active = confirmedConditions(result.state).filter(c => c.kind !== 'scene');
+      let next = withAssistant(s, { state: result.state, pendingRequest: null, status: 'idle' });
+      // 比较两款时放进对比栏，助手面板里显示结构化比较表
+      if (result.compareIds) next = { ...next, compareIds: result.compareIds, notice: null };
+      return say(next, 'assistant', result.reply, {
+        viewedProductId: pending.context.viewedProductId, productRefs: result.productRefs, details,
+        ...(result.recommendations === null ? {} : {
+          matchCount: result.matchCount ?? 0,
+          recommendations: result.recommendations.map(r => ({ productId: r.productId, reasons: recommendationReasons(active, r.softMatched) })),
+        }),
+      });
+    }
+
+    case 'chatFailed': {
+      const pending = s.assistant.pendingRequest;
+      if (!pending || pending.id !== action.requestId) return s;
+      return say(withAssistant(s, { pendingRequest: null, status: 'error', lastFailedText: pending.text }), 'assistant', action.message,
+        { viewedProductId: pending.context.viewedProductId, failed: true });
     }
 
     case 'retry':

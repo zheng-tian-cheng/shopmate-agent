@@ -20,11 +20,11 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
   try {
     response = await fetch(base + path, { method: body === undefined ? 'GET' : 'POST',
       headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.timeout(15000), cache: 'no-store' });
+      signal: AbortSignal.timeout(path === '/chat' ? 50000 : 15000), cache: 'no-store' });
   } catch { throw new ApiError('无法连接商品服务，请确认后端已启动后重试。', 0); }
   if (!response.ok) {
     const error = await response.json().catch(() => null);
-    throw new ApiError(typeof error?.detail === 'string' ? error.detail : `请求失败（${response.status}），请稍后重试。`, response.status);
+    throw new ApiError(typeof error?.error?.message === 'string' ? error.error.message : typeof error?.detail === 'string' ? error.detail : `请求失败（${response.status}），请稍后重试。`, response.status);
   }
   return response.json() as Promise<T>;
 }

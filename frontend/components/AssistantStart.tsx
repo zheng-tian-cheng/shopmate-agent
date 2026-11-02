@@ -16,7 +16,7 @@ export function AssistantStart({ composer, onBrowse, onPick }: {
   return <section className="assistant-start">
     <header><span className="eyebrow">SHOPMATE · 购物灵感与选择</span><h1>今天想买点什么？</h1><p>告诉我你的需求，一起找到合适的商品。</p></header>
     {composer}
-    <p className="prototype-caption">Mock 原型 · 暂仅识别固定表达，尚未接入大模型</p>
+    <p className="prototype-caption">Gemini 购物助手 · 先聊需求，再一起挑选</p>
     <section className="inspiration" aria-labelledby="inspiration-title">
       <div className="inspiration-heading"><h2 id="inspiration-title">猜你喜欢</h2><span>编辑精选 · 非个性化</span></div>
       <div className="inspiration-cards">

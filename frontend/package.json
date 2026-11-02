@@ -10,7 +10,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "check:browser": "node scripts/browser-check.mjs",
     "data:report": "node scripts/data-report.mjs",
-    "test:api": "node --experimental-strip-types --test tests/api.integration.ts"
+    "test:api": "node --experimental-strip-types --test tests/api.integration.ts",
+    "test:chat": "node --experimental-strip-types --test tests/chat.integration.ts"
   },
   "dependencies": {
     "next": "16.4.3",

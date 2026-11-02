@@ -20,3 +20,9 @@ frontend/reference-images/
 
 # 竞品截图暂不公开（待确认截图中没有个人信息后再上传）
 docs/竞品截图/
+
+# Isolated browser/build verification
+.next-check/
+
+# 真实模型检查报告（本地记录）
+live-report*.json

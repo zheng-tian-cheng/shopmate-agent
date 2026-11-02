@@ -5,9 +5,12 @@
 """
 import logging
 import os
-from fastapi import FastAPI, HTTPException, Request
+from src import agent_config  # Load server .env before reading CORS configuration.
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from src.agent import ChatError, get_model, run_agent
+from src.agent_models import ChatErrorResponse, ChatRequest, ChatResponse
 from src.conditions import update_conditions
 from src.models import (ApplyRequest, ApplyResponse, CatalogResponse, Product,
                         SearchRequest, SearchResponse, CompareRequest, CompareResponse)
@@ -16,6 +19,12 @@ from src.tools import PRODUCTS, SOURCES, get_product, search_products, compare_p
 app = FastAPI(title='ShopMate', version='0.1.0')
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(','), allow_methods=['GET', 'POST'], allow_headers=['Content-Type'])
 log = logging.getLogger('shopmate')
+# 每次模型请求的序号、耗时、工具名和错误码写入控制台（INFO），不含用户内容和密钥
+if not log.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter('%(levelname)s:     %(name)s %(message)s'))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
 
 
 # 未预料的异常也返回带说明的 JSON（前端据 detail 显示），细节只写入服务端日志
@@ -59,3 +68,13 @@ def detail(product_id: str):
         return get_product(product_id)
     except KeyError as e:
         raise HTTPException(404, f'商品不存在：{product_id}') from e
+
+
+# 聊天在进程内直接调用业务函数，不发内部 HTTP，也不在服务端保存会话
+@app.post('/api/chat', response_model=ChatResponse, response_model_exclude_unset=True,
+          responses={code: {'model': ChatErrorResponse} for code in (422, 429, 502, 503, 504)})
+async def chat(request: ChatRequest, model=Depends(get_model)):
+    try:
+        return await run_agent(request, model)
+    except ChatError as e:
+        return JSONResponse(status_code=e.status, content={'error': {'code': e.code, 'message': e.message, 'retryable': e.retryable}})

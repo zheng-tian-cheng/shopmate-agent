@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'ShopMate 原型 · 演示商城',
-  description: '内嵌在模拟购物页面中的 ShopMate 选购助手原型。商品来自固定演示数据集，固定话术演示，未接入 LLM 和 RAG。',
+  description: '内嵌在模拟购物页面中的 ShopMate 选购助手原型。商品来自固定演示数据集；由 Gemini 理解需求、后端规则筛选，未接入 RAG。',
 };
 
 export default async function Layout({ children }: { children: ReactNode }) {
