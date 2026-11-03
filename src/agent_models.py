@@ -39,6 +39,11 @@ class GetProduct(Model):
     product_id: str = Field(min_length=1, max_length=100)
 
 
+class RetrieveEvidence(Model):
+    product_ids: list[str] = Field(min_length=1, max_length=3)
+    question: str = Field(min_length=1, max_length=300)
+
+
 class Respond(Model):
     text: str = Field(min_length=1, max_length=3000)
     recommend_ids: list[str] = Field(default_factory=list, max_length=3)
@@ -56,6 +61,17 @@ class ChatRecommendation(Model):
     softMatched: list[FieldName]  # 前端据此生成卡片上的“符合条件”理由
 
 
+class EvidenceRef(Model):
+    """回答引用的官网资料：编号与正文中的 [S…] 对应，可追溯到来源登记表和页面位置。"""
+    ref: str
+    productId: str
+    sourceId: str
+    source: str
+    region: str
+    position: str
+    url: str | None = None
+
+
 class ChatResponse(Model):
     reply: str
     state: ConditionState
@@ -66,6 +82,7 @@ class ChatResponse(Model):
     productRefs: list[str]
     compareIds: list[str] | None = None
     tools: list[ToolStatus]
+    evidence: list[EvidenceRef] | None = None
     mode: Literal['gemini'] = 'gemini'
 
 

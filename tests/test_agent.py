@@ -182,7 +182,7 @@ def test_tool_loop_bounded():
 
 def test_sdk_schema_builds_and_no_credentials_in_prompt(monkeypatch):
     monkeypatch.setenv('GEMINI_API_KEY', 'do-not-disclose')
-    assert len(tool_declarations()) == 6
+    assert len(tool_declarations()) == 7  # 第 7 个是 retrieve_evidence（商品证据检索）
     from src.agent_config import SYSTEM_PROMPT
     assert 'do-not-disclose' not in SYSTEM_PROMPT
 

@@ -70,6 +70,12 @@ function MessageRefs({ message }: { message: Message }) {
   return <p className="message-refs" data-refs={refs.map(p => p.id).join(' ')}>关于 {refs.map((p, i) => <span key={p.id}>{i > 0 && '、'}<Link href={`/headphones/${p.id}`} onClick={() => { if (!docked) dispatch({ type: 'closeAssistant' }); }}>{p.name}</Link></span>)}</p>;
 }
 
+// 回答引用的官网资料，编号与正文里的 [S…] 对应；可打开原网页核对
+function MessageEvidence({ message }: { message: Message }) {
+  if (!message.evidence?.length) return null;
+  return <details className="change-log evidence-log"><summary>依据来源 · {message.evidence.length} 条官网资料</summary><ul>{message.evidence.map(e => <li key={e.ref}>[{e.ref}] {getProduct(e.productId)?.name ?? e.productId} · {e.source} · {e.region}{e.url && <> · <a href={e.url} target="_blank" rel="noreferrer">原网页 ↗</a></>}</li>)}</ul></details>;
+}
+
 export function AssistantPanel() {
   const { session, dispatch, docked } = useShop();
   const { open, messages, status, state, failNext } = session.assistant;
@@ -144,7 +150,7 @@ export function AssistantPanel() {
     <aside ref={panelRef} className={`assistant ${docked ? 'docked' : ''}`} role={docked ? 'complementary' : 'dialog'} aria-modal={docked ? undefined : true} aria-labelledby="assistant-title" hidden={!open}>
       <header className="assistant-head"><button type="button" className="assistant-back" aria-label="关闭 ShopMate，返回购物页面" onClick={() => dispatch({ type: 'closeAssistant' })}>‹ 返回商城</button><BrandMark small /><div className="title"><h2 id="assistant-title" ref={headingRef} tabIndex={-1}>ShopMate</h2><span>你的选购搭子 <span className="prototype-dot">· 开发原型</span></span></div><button className="more-button" aria-label={debug ? '返回对话' : '更多：开始新选购、原型调试'} aria-expanded={debug} onClick={() => { setChoosingCategory(false); setDebug(!debug); }}>{debug ? '完成' : '···'}</button></header>
       <div className="assistant-body" ref={bodyRef} {...scrollProps}>
-        {choosingCategory ? <CategoryPicker onBack={() => setChoosingCategory(false)} onSelect={() => { dispatch({ type: 'selectCategory', category: 'headphones' }); setChoosingCategory(false); }} /> : debug ? <section className="debug-panel"><h2>选购</h2><button className="button outline" onClick={() => { dispatch({ type: 'reset' }); setDebug(false); setInput(''); }}>开始新选购</button><p>清空助手里的条件和对话，重新开始；不影响商品列表的筛选。</p><h2>原型调试</h2><p>Gemini 理解自然语言，商品筛选由后端规则执行；尚未接入第三方评测与 RAG。</p><label className="check"><input type="checkbox" checked={failNext} onChange={() => dispatch({ type: 'toggleFailNext' })} />下一条输入模拟失败</label><h3>试试这样问</h3><div className="phrase-list">{DEMO_PHRASES.map(p => <button key={p} disabled={loading} onClick={() => { send(p); setDebug(false); }}>{p} ↗</button>)}</div></section> : <>
+        {choosingCategory ? <CategoryPicker onBack={() => setChoosingCategory(false)} onSelect={() => { dispatch({ type: 'selectCategory', category: 'headphones' }); setChoosingCategory(false); }} /> : debug ? <section className="debug-panel"><h2>选购</h2><button className="button outline" onClick={() => { dispatch({ type: 'reset' }); setDebug(false); setInput(''); }}>开始新选购</button><p>清空助手里的条件和对话，重新开始；不影响商品列表的筛选。</p><h2>原型调试</h2><p>Gemini 理解自然语言，商品筛选由后端规则执行；商品证据问答检索官网资料（RAG），尚未接入第三方评测。</p><label className="check"><input type="checkbox" checked={failNext} onChange={() => dispatch({ type: 'toggleFailNext' })} />下一条输入模拟失败</label><h3>试试这样问</h3><div className="phrase-list">{DEMO_PHRASES.map(p => <button key={p} disabled={loading} onClick={() => { send(p); setDebug(false); }}>{p} ↗</button>)}</div></section> : <>
           {home ? <AssistantStart composer={composer} onBrowse={browseCategories} onPick={example => {
             // 只填入输入框，不发送、不写入购买条件；用户可以修改后再确认发送
             setInput(example);
@@ -159,6 +165,7 @@ export function AssistantPanel() {
             <section className="messages" ref={logRef} role="log" aria-label="对话记录">{messages.map(m => <div key={m.id} className={`turn turn-${m.role}`}>
               <div className={`message from-${m.role}`}>{m.text}</div>
               <MessageRefs message={m} />
+              <MessageEvidence message={m} />
               <RecommendationList message={m} />
               {m.details && m.details.length > 0 && <details className="change-log"><summary>条件变更详情{m.unhandled ? ` · ${m.unhandled} 项没有处理` : ''}</summary><ul>{m.details.map((d, i) => <li key={i}>{d}</li>)}</ul></details>}
             </div>)}{loading && <div className="loading-line" role="status"><span className="spinner" />正在整理你的选择…</div>}{status === 'error' && <div className="error-line" role="alert">暂时没能完成，条件已保留。<button className="button outline small" onClick={() => { followLatest(); dispatch({ type: 'retry' }); }}>重试</button></div>}</section>

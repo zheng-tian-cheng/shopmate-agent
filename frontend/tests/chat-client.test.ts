@@ -152,3 +152,16 @@ test('等待期间修改条件或切换品类：旧请求作废，迟到的回�
   assert.equal(state.assistant.state.category, 'headphones');
   assert.equal(state.assistant.pendingRequest, null);
 });
+
+test('证据问答：回复附带的官网资料来源保存在这条消息上，没有证据的回复不带来源', async () => {
+  let s = await reduce(initialSession(), { type: 'openAssistant', entry: 'home' });
+  s = await reduce(s, { type: 'sendText', text: 'Air4 和 Air4 Pro 能用 LHDC 吗' });
+  const evidence = [{ ref: 'S1', productId: 'oppo-enco-air4', sourceId: 'oppo-enco-air4--01', source: '官网规格页', region: '海外站（Global）', position: '正文', url: 'https://example.test/air4' }];
+  const action = resolvedWith(s, 'OPPO Enco Air4 只写了 AAC/SBC [S1]。');
+  const result: ChatResult = { ...(action as { result: ChatResult }).result, evidence };
+  s = await reduce(s, { ...action, result } as ShopAction);
+  assert.deepEqual(s.assistant.messages.at(-1)!.evidence, evidence);
+  s = await reduce(s, { type: 'sendText', text: '谢谢' });
+  s = await reduce(s, resolvedWith(s, '不客气。'));
+  assert.equal(s.assistant.messages.at(-1)!.evidence, undefined);
+});

@@ -12,8 +12,9 @@ from google import genai
 from google.genai import types, errors
 from pydantic import ValidationError
 from . import agent_config as config
+from . import evidence as evidence_tool
 from .agent_models import (ChatRequest, ChatResponse, SelectCategory, UpdateConditions,
-                           NoArgs, GetProduct, Respond)
+                           NoArgs, GetProduct, RetrieveEvidence, Respond)
 from .models import CompareRequest, ConditionState
 from .conditions import ALLOWED, FIELDS, update_conditions
 from .tools import PRODUCTS, get_product, search_products, compare_products
@@ -22,13 +23,15 @@ log = logging.getLogger('shopmate.agent')
 
 TOOL_MODELS = {'select_category': SelectCategory, 'update_conditions': UpdateConditions,
                'search_products': NoArgs, 'get_product': GetProduct,
-               'compare_products': CompareRequest, 'respond': Respond}
+               'compare_products': CompareRequest, 'retrieve_evidence': RetrieveEvidence, 'respond': Respond}
 DESCRIPTIONS = {
     'select_category': '识别用户本轮要买的品类。只有 headphones 开放；unsupported/unclear 不执行耳机选购。',
     'update_conditions': '增量更新购买条件，origin固定为interpreter。支持set/update/remove/suggest/ask。不可代替用户确认建议。',
     'search_products': '使用当前已确认条件查询正式商品，严格硬过滤、软排序。没有参数，不可自行提供或放宽条件。',
     'get_product': '通过准确product_id查询原始参数。用户只问价格时只回答价格。',
     'compare_products': '比较两个不同的正式product_ids，保留续航与重量口径。',
+    'retrieve_evidence': '为已确定的product_ids取回官网资料片段（规格表、兼容条件、使用限制、脚注里的测试口径），返回编号S1…及商品、来源、位置。'
+                         '比较几款就一次传入几款，会按商品分别检索。只读，不改条件和推荐；只有官网资料，没有第三方评测。',
     'respond': '结束本轮并展示推荐卡片或商品引用：text为回复（事实用占位符），recommend_ids为合格推荐ID，product_refs为相关商品ID。读完其他工具结果后单独调用。',
 }
 SCHEMA_NOISE = {'title', 'default', 'minLength', 'maxLength', 'minItems', 'maxItems'}
@@ -159,7 +162,41 @@ EXTRA_SIGN, EXTRA_UNIT = re.compile(r'[¥￥]\s*' + MONEY), re.compile(MONEY + r
 CN_AMOUNT = re.compile(r'[零一二两三四五六七八九十百千万几]+个?\s*(?:元|块|小时|分钟|克|分贝|毫安)')
 
 
-def render_reply(text, seen, state, matches):
+CITATION = re.compile(r'\[(S\d+(?:\s*[,，、]\s*S?\d+)*)\]')
+NUMBER = re.compile(r'\d+(?:\.\d+)?')
+CLAUSE = re.compile(r'[^。！？!?\n；;]+(?:[。！？!?；;]\s*(?:\[S[^\]]*\]\s*)*)?')
+MONEY_DIGITS = re.compile(r'\d\s*(?:元|块)|[¥￥]\s*\d')
+
+
+def cited_refs(text):
+    return {f'S{n}' for g in CITATION.findall(text) for n in re.findall(r'\d+', g)}
+
+
+def numbers_of(text):
+    found = set(NUMBER.findall(text))
+    return found | {n[:-2] for n in found if n.endswith('.0')}
+
+
+def check_evidence_numbers(prose, evidence):
+    """本轮取回证据后，正文可以照写证据里的数值，但所在句子必须标注 [S编号]，且每个数字都出现在所引片段中。
+    这样数字仍由来源约束，而不是模型自己写；价格和预算照旧只能用占位符。"""
+    if MONEY_DIGITS.search(prose) or CN_AMOUNT.search(prose):
+        raise ValueError('价格、预算和带单位的汉字数字请使用事实占位符；证据片段里的数值照写阿拉伯数字并标注[S编号]')
+    refs = {e['ref']: numbers_of(e['text']) for e in evidence}
+    for clause in CLAUSE.findall(prose):
+        numbers, cited = NUMBER.findall(CITATION.sub('', clause)), cited_refs(clause)
+        if not numbers:
+            continue
+        if not cited:
+            raise ValueError('含数字的句子必须标注所依据的证据编号[S…]，或改用商品事实占位符')
+        if not cited <= refs.keys():
+            raise ValueError('引用了本轮没有取回的证据编号')
+        allowed = set().union(*(refs[r] for r in cited))
+        if any(n not in allowed for n in numbers):
+            raise ValueError('数字必须与所引证据片段中的数值一致，或改用商品事实占位符')
+
+
+def render_reply(text, seen, state, matches, evidence=()):
     text = EXTRA_UNIT.sub(r'\1', EXTRA_SIGN.sub(r'\1', text))
 
     def replace(m):
@@ -175,11 +212,15 @@ def render_reply(text, seen, state, matches):
         if product_id not in seen or field not in FACT_FIELDS:
             raise ValueError('事实必须引用本轮工具查询到的商品及支持的字段')
         return fact(get_product(product_id), field)
-    # Exact placeholders make numbers/units source-bound, not model-authored.
+    # Exact placeholders make numbers/units source-bound, not model-authored; evidence numbers must cite their snippet.
     prose = PLACEHOLDER.sub('', text)
     for p in PRODUCTS:
         prose = prose.replace(p['displayName'], '').replace(p['model'], '')
-    if re.search(r'\d|https?://|www\.', prose) or CN_AMOUNT.search(prose) or '{{' in PLACEHOLDER.sub('', text):
+    if re.search(r'https?://|www\.', prose) or '{{' in prose:
+        raise ValueError('商品参数和预算请使用事实占位符，不要自行写数值或链接')
+    if evidence:
+        check_evidence_numbers(prose, evidence)
+    elif re.search(r'\d', prose) or CN_AMOUNT.search(prose):
         raise ValueError('商品参数和预算请使用事实占位符，不要自行写数值或链接')
     return PLACEHOLDER.sub(replace, text)
 
@@ -195,6 +236,11 @@ def tool_error(e):
 
 
 # Sent with update_conditions results that contain rejections, inside the same tool loop (no extra request).
+EVIDENCE_NOTE = ('只有官网资料，没有第三方评测。关键事实后标注[S编号]；含数字的句子必须标注，数字要与所引片段一致；'
+                 '注意每个片段所属的型号和地区版本；资料没有覆盖的直接说不知道，需要用户补充的信息直接问。')
+EVIDENCE_FIELDS = ('ref', 'product_id', 'product', 'source_id', 'source', 'region', 'position', 'text')
+
+
 REJECTED_NOTE = ('rejected里的项没有生效，不能说已记录、已筛选或已考虑。code=invalid是调用方式不对，可按reason修正后重试；'
                  '没有对应字段的需求（如外观、音乐风格）不要再写进条件，在回复里如实说暂时不能按它筛选，影响选择时简短澄清。')
 
@@ -263,7 +309,7 @@ async def run_agent(request: ChatRequest, model):
     known_ids = {p['id'] for p in PRODUCTS}
     if request.viewedProductId is not None and request.viewedProductId not in known_ids:
         raise ChatError('UNKNOWN_PRODUCT', '当前浏览商品不存在，请返回商品列表。', 422, False)
-    seen, applied, rejected, statuses = set(), [], [], []
+    seen, applied, rejected, statuses, evidence = set(), [], [], [], []  # evidence：本轮取回的证据，编号 S1…
     matches, comparison = None, None
     blocked_category = False
     contents = [model_input(request)]
@@ -300,7 +346,8 @@ async def run_agent(request: ChatRequest, model):
             raise ValueError('推荐必须来自本轮最新筛选结果，不能绕过硬约束')
         if not set(product_refs) <= seen:
             raise ValueError('商品引用必须经过本轮查询')
-        reply = render_reply(text, seen, state, matches)
+        reply = render_reply(text, seen, state, matches, evidence)
+        cited = cited_refs(text)
         # Cards follow the service's ranking; the model only chooses which eligible items to show.
         picks = sorted(recommend_ids, key=rank.__getitem__)
         soft = {m['product']['id']: m['evaluation']['softMatched'] for m in matches or []}
@@ -308,7 +355,9 @@ async def run_agent(request: ChatRequest, model):
         return ChatResponse.model_validate(dict(reply=reply, state=state, applied=applied, rejected=rejected,
             recommendations=[dict(productId=i, softMatched=soft[i]) for i in picks] if matches is not None else None,
             matchCount=len(matches) if matches is not None else None, productRefs=refs,
-            compareIds=comparison, tools=statuses + ([dict(name=tool, status='ok')] if tool else []), mode='gemini'))
+            compareIds=comparison, tools=statuses + ([dict(name=tool, status='ok')] if tool else []), mode='gemini',
+            **({'evidence': [dict(ref=e['ref'], productId=e['product_id'], sourceId=e['source_id'], source=e['source'], region=e['region'],
+                                  position=e['position'], url=e.get('url')) for e in evidence if e['ref'] in cited]} if evidence else {})))
 
     async def loop():
         nonlocal state, matches, comparison, calls_used, blocked_category
@@ -375,6 +424,24 @@ async def run_agent(request: ChatRequest, model):
                         p = get_product(args.product_id)
                         seen.add(p['id'])
                         result = public_product(p)
+                    elif name == 'retrieve_evidence':
+                        ids = list(dict.fromkeys(args.product_ids))
+                        if unknown := [i for i in ids if i not in known_ids]:
+                            raise KeyError(unknown[0])
+                        try:
+                            found = await asyncio.to_thread(evidence_tool.retrieve, args.question, ids)
+                        except evidence_tool.EvidenceUnavailable as e:
+                            raise ValueError(f'证据检索暂不可用：{e}。如实说明暂时查不到官网资料，只用已有商品参数回答') from None
+                        items = []
+                        for e in found:
+                            known = next((x for x in evidence if x['chunk_id'] == e['chunk_id']), None)
+                            if known is None:
+                                known = dict(e, ref=f'S{len(evidence) + 1}')
+                                evidence.append(known)
+                            items.append({k: known[k] for k in EVIDENCE_FIELDS})
+                        seen.update(ids)
+                        log.info('chat=%s evidence products=%d refs=%d', chat_id, len(ids), len(items))
+                        result = dict(evidence=items, missing=[i for i in ids if i not in {x['product_id'] for x in items}], note=EVIDENCE_NOTE)
                     elif name == 'compare_products':
                         result = {'products': [public_product(p) for p in compare_products(args.product_ids)['products']]}
                         comparison = args.product_ids

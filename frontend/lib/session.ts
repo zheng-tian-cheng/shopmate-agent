@@ -30,6 +30,17 @@ export interface Recommendation {
   reasons: string[];
 }
 
+// 回答引用的官网资料：编号与正文里的 [S…] 对应（POST /api/chat 的 evidence，见 src/agent_models.py 的 EvidenceRef）
+export interface EvidenceRef {
+  ref: string;
+  productId: string;
+  sourceId: string;
+  source: string;
+  region: string;
+  position: string;
+  url?: string | null;
+}
+
 export interface Message {
   id: number;
   role: 'user' | 'assistant';
@@ -46,6 +57,7 @@ export interface Message {
   matchCount?: number;
   // 这条消息讨论的商品，生成时确定，之后切换页面也不改变
   productRefs?: string[];
+  evidence?: EvidenceRef[];
 }
 
 // 每次请求带给助手的上下文快照（第 2 阶段由前端发给后端）。发送时确定，等待期间切换页面不影响这次回答。
@@ -118,6 +130,7 @@ export interface ChatResult {
   productRefs: string[];
   compareIds: string[] | null;
   tools: { name: string; status: 'ok' | 'rejected'; message?: string }[];
+  evidence?: EvidenceRef[];
 }
 
 function initialAssistant(): AssistantSession {
@@ -399,6 +412,7 @@ export async function reduce(s: ShopSession, action: ShopAction): Promise<ShopSe
       return say(next, 'assistant', result.reply, {
         viewedProductId: pending.context.viewedProductId, productRefs: result.productRefs, details,
         ...(unhandled ? { unhandled } : {}),
+        ...(result.evidence?.length ? { evidence: result.evidence } : {}),
         ...(result.recommendations === null ? {} : {
           matchCount: result.matchCount ?? 0,
           recommendations: result.recommendations.map(r => ({ productId: r.productId, reasons: recommendationReasons(active, r.softMatched) })),
