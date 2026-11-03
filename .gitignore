@@ -26,3 +26,14 @@ docs/竞品截图/
 
 # 真实模型检查报告（本地记录）
 live-report*.json
+
+# RAG 原始资料：厂商和第三方原文只在本地保存，不公开分发。
+# 按 data/rag/sources_manifest.json 中的 URL 和 SHA-256 重新获取、校验。
+/data/rag/sources/
+# RAG 可重建产物：由原始资料生成的分块、向量索引（Chroma）和缓存。后续代码请输出到这些目录
+/data/rag/chunks/
+/data/rag/chroma/
+/data/rag/cache/
+
+# 评测运行记录（模型原文、工具轨迹、评分表）：本地保存；需要公开时另行整理汇总结果
+/eval/runs/

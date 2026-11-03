@@ -1,0 +1,5 @@
+# RAG 对照实验（experiments/rag）额外依赖；主应用不需要。
+# 安装：.venv/bin/pip install -r requirements.txt -r requirements-rag.txt
+faiss-cpu>=1.9,<2
+numpy>=2,<3
+beautifulsoup4>=4.12,<5
