@@ -1,0 +1,65 @@
+{
+  "about": "RAG 对照实验的标准答案。证据单元按 data/rag/sources 本地原文人工核对（2026-11-03）：pattern 在小写、去空白后的文本上匹配，sources 是原文中实际出现该内容的来源（同款商品的等价页面一并列出），由 tests/test_rag_experiment.py 检查。一个检索片段只有包含完整 pattern 才算覆盖该单元，被切断的不算。主问题原句和参考要点取自 docs/ShopMate_RAG_Eval_V0.1.md（RAG-02、RAG-05），不根据模型回答修改。",
+  "units": {
+    "AIR4-MODEL": {"product": "oppo-enco-air4", "sources": ["oppo-enco-air4--01"], "pattern": "model\\W{0,3}etee1", "quote": "Earphone Model ETEE1"},
+    "AIR4-CODEC": {"product": "oppo-enco-air4", "sources": ["oppo-enco-air4--01"], "pattern": "codec:?aac/sbc", "quote": "Bluetooth® Codec AAC/SBC"},
+    "AIR4-32DB": {"product": "oppo-enco-air4", "sources": ["oppo-enco-air4--02"], "pattern": "32dbisthemaximumnoisecancellationdepthtestedinoppolabs", "quote": "32dB is the maximum noise cancellation depth tested in OPPO Labs."},
+    "PRO-MODEL": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--01", "oppo-enco-air4-pro--02"], "pattern": "model:?etea1", "quote": "Model: ETEA1"},
+    "PRO-CODEC": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--01", "oppo-enco-air4-pro--02"], "pattern": "codec:?lhdc5\\.0/aac/sbc", "quote": "Bluetooth® codec: LHDC 5.0/AAC/SBC"},
+    "PRO-DUAL": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--03"], "pattern": "betweentwolhdc-supporteddevices", "quote": "LHDC transmission should be built via Bluetooth® connection between two LHDC-supported devices."},
+    "PRO-NOTE": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--03"], "pattern": "themobilephoneneedstosupportlhdc5\\.0", "quote": "* To use this function, the mobile phone needs to support LHDC 5.0."},
+    "PRO-PHONES": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--03"], "pattern": "coloros13\\.1orlaterversions,andarefindx6", "quote": "the OPPO phone supported by LHDC 5.0 needs to support ColorOS 13.1 or later versions, and are Find X6 and later released Find series, Reno series."},
+    "PRO-BITRATE": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--03"], "pattern": "aactraditionaltransmissionprotocol\\(256kbps\\),thelhdc5\\.0ultra-hdtransmissionprotocol\\(1mbps\\)", "quote": "Compared with the AAC traditional transmission protocol (256kbps), the LHDC 5.0 ultra-HD transmission protocol (1Mbps)"},
+    "PRO-49DB": {"product": "oppo-enco-air4-pro", "sources": ["oppo-enco-air4-pro--03"], "pattern": "49dbisthemaximumnoisecancellationdepthtestedinoppolabs", "quote": "49dB is the maximum noise cancellation depth tested in OPPO Labs."},
+    "HW-27DEF": {"product": "huawei-freebuds-6i", "sources": ["huawei-freebuds-6i--01"], "pattern": "27db为特定场景下50hz至20khz频段内多个频点平均可达到的综合降噪深度", "quote": "27 dB 为特定场景下 50 Hz 至 20 kHz 频段内多个频点平均可达到的综合降噪深度。"},
+    "HW-AVG": {"product": "huawei-freebuds-6i", "sources": ["huawei-freebuds-6i--01"], "pattern": "全频段平均降噪深度是指耳机在人耳核心可听频率范围内的综合平均降噪深度", "quote": "*全频段平均降噪深度是指耳机在人耳核心可听频率范围内的综合平均降噪深度"},
+    "HW-HIGH": {"product": "huawei-freebuds-6i", "sources": ["huawei-freebuds-6i--01"], "pattern": "降噪功能在高频段相对不明显，例如人声、鸣笛", "quote": "降噪功能在高频段相对不明显，例如人声、鸣笛等。"},
+    "OP-CODEC": {"product": "oneplus-buds-3", "sources": ["oneplus-buds-3--01"], "pattern": "codeclhdc/aac/sbc", "quote": "Bluetooth® Codec LHDC/AAC/SBC"},
+    "OP-49DB": {"product": "oneplus-buds-3", "sources": ["oneplus-buds-3--01"], "pattern": "upto49dbsmartadaptivenoisecancellation", "quote": "Noise Cancellation Up to 49dB Smart Adaptive Noise Cancellation"}
+  },
+  "main": [
+    {
+      "id": "RAG-02",
+      "question": "Enco Air4 和 Air4 Pro，我主要想听高音质音乐。加钱买 Pro 就能用 LHDC 吗？我用的是安卓手机。",
+      "products": ["oppo-enco-air4", "oppo-enco-air4-pro"],
+      "required": [["AIR4-CODEC"], ["PRO-CODEC"], ["PRO-DUAL", "PRO-NOTE"], ["PRO-PHONES"]],
+      "criteria": [
+        {"id": "C1", "text": "分别说明编码：Air4 为 AAC/SBC，Air4 Pro 为 LHDC 5.0/AAC/SBC；不能说 Air4 支持 LHDC", "needs": [["AIR4-CODEC"], ["PRO-CODEC"]]},
+        {"id": "C2", "text": "Pro 支持 LHDC，但手机端也必须支持 LHDC（两端都支持才能使用）", "needs": [["PRO-DUAL", "PRO-NOTE"]]},
+        {"id": "C3", "text": "只知道是安卓手机，不足以确认能用 LHDC", "needs": [["PRO-DUAL", "PRO-NOTE"]]},
+        {"id": "C4", "text": "询问或提示核对手机型号和系统版本（资料列出 ColorOS 13.1 及以上、Find X6 及之后的 Find 系列、Reno 系列等条件），再判断升级 Pro 是否值得", "needs": [["PRO-PHONES"]]},
+        {"id": "C5", "text": "不保证音质一定更好；资料来自海外（Global/新加坡/菲律宾）官网，不能未经核验视为与其他地区版本相同", "needs": []}
+      ],
+      "forbidden": ["说 Air4 标准版支持 LHDC", "说安卓手机都能用 LHDC 或断言用户手机能用", "保证 Pro 音质一定更好", "把海外版资料当成已核实的国行信息"]
+    },
+    {
+      "id": "RAG-05",
+      "question": "华为 FreeBuds 6i 写的是 27dB，一加 Buds 3 写的是 49dB，是不是一加的降噪强很多？",
+      "products": ["huawei-freebuds-6i", "oneplus-buds-3"],
+      "required": [["HW-27DEF"], ["OP-49DB"]],
+      "criteria": [
+        {"id": "D1", "text": "华为 27dB 是特定场景下 50Hz–20kHz 多个频点的平均降噪深度（华为实验室）", "needs": [["HW-27DEF"]]},
+        {"id": "D2", "text": "一加 49dB 表述为最高值（Up to）", "needs": [["OP-49DB"]]},
+        {"id": "D3", "text": "两个指标口径和测试条件不同，不能用数字大小推导谁更强", "needs": [["HW-27DEF"], ["OP-49DB"]]}
+      ],
+      "forbidden": ["把 27dB 说成最大降噪深度", "用 49−27 推导实际差距", "断言一加降噪更强"]
+    }
+  ],
+  "queries": [
+    {"id": "Q01", "type": "型号识别", "text": "OPPO Enco Air4 的耳机型号是什么？", "products": ["oppo-enco-air4"], "required": [["AIR4-MODEL"]]},
+    {"id": "Q02", "type": "型号识别", "text": "OPPO Enco Air4 Pro 的耳机型号是什么？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-MODEL"]]},
+    {"id": "Q03", "type": "编码", "text": "Enco Air4 支持哪些蓝牙音频编码？", "products": ["oppo-enco-air4"], "required": [["AIR4-CODEC"]]},
+    {"id": "Q04", "type": "编码", "text": "Enco Air4 Pro 支持哪些蓝牙编码？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-CODEC"]]},
+    {"id": "Q05", "type": "相似型号", "text": "Enco Air4 标准版能用 LHDC 吗？", "products": ["oppo-enco-air4"], "required": [["AIR4-CODEC"]]},
+    {"id": "Q06", "type": "兼容条件", "text": "Air4 Pro 要用 LHDC，对手机有什么要求？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-DUAL", "PRO-NOTE"], ["PRO-PHONES"]]},
+    {"id": "Q07", "type": "脚注定位", "text": "Air4 Pro 的 LHDC 支持哪些 OPPO 手机和系统版本？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-PHONES"]]},
+    {"id": "Q08", "type": "脚注定位", "text": "Air4 Pro 的 LHDC 比 AAC 码率高多少？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-BITRATE"]]},
+    {"id": "Q09", "type": "编码", "text": "Air4 和 Air4 Pro 的蓝牙编码有什么区别？", "products": ["oppo-enco-air4", "oppo-enco-air4-pro"], "required": [["AIR4-CODEC"], ["PRO-CODEC"]]},
+    {"id": "Q10", "type": "脚注定位", "text": "Air4 Pro 的 49dB 降噪是在什么条件下测出来的？", "products": ["oppo-enco-air4-pro"], "required": [["PRO-49DB"]]},
+    {"id": "Q11", "type": "脚注定位", "text": "Enco Air4 的 32dB 降噪深度是怎么测的？", "products": ["oppo-enco-air4"], "required": [["AIR4-32DB"]]},
+    {"id": "Q12", "type": "指标口径", "text": "FreeBuds 6i 的 27dB 降噪深度是平均值还是最大值？", "products": ["huawei-freebuds-6i"], "required": [["HW-27DEF", "HW-AVG"]]},
+    {"id": "Q13", "type": "脚注定位", "text": "FreeBuds 6i 的降噪对哪些声音效果不明显？", "products": ["huawei-freebuds-6i"], "required": [["HW-HIGH"]]},
+    {"id": "Q14", "type": "相似型号", "text": "一加 Buds 3 支持 LHDC 吗？降噪最高多少？", "products": ["oneplus-buds-3"], "required": [["OP-CODEC"], ["OP-49DB"]]},
+    {"id": "Q15", "type": "指标口径", "text": "FreeBuds 6i 的 27dB 和一加 Buds 3 的 49dB 能直接比吗？", "products": ["huawei-freebuds-6i", "oneplus-buds-3"], "required": [["HW-27DEF"], ["OP-49DB"]]}
+  ]
+}

@@ -1,0 +1,1224 @@
+{
+ "date": "2026-11-03T02:09:53+08:00",
+ "api_calls": 0,
+ "commit": "62f6e34",
+ "uncommitted": true,
+ "embed_model": "gemini-embedding-001",
+ "budget": 1200,
+ "spec_first": 1,
+ "code": {
+  "src/evidence.py": "5b3b0aeaa907344e",
+  "experiments/rag/corpus.py": "2521356d471818dd",
+  "experiments/rag/retrieval.py": "4e0ada17eec7af5f"
+ },
+ "variants": [
+  {
+   "name": "B",
+   "status": "ok",
+   "chunks": 305,
+   "rows": [
+    {
+     "query": "Q01",
+     "type": "型号识别",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 9,
+     "context_tokens": 1091,
+     "context_ids": [
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--01:3",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--01:2",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:5",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:19"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--01:3",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--01:2"
+     ]
+    },
+    {
+     "query": "Q02",
+     "type": "型号识别",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 9,
+     "context_tokens": 1025,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--02:0",
+      "B:oppo-enco-air4-pro--01:0",
+      "B:oppo-enco-air4-pro--02:4",
+      "B:oppo-enco-air4-pro--01:4",
+      "B:oppo-enco-air4-pro--03:9",
+      "B:oppo-enco-air4-pro--03:24",
+      "B:oppo-enco-air4-pro--03:23"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--02:0",
+      "B:oppo-enco-air4-pro--01:0",
+      "B:oppo-enco-air4-pro--02:4"
+     ]
+    },
+    {
+     "query": "Q03",
+     "type": "编码",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      5
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1045,
+     "context_ids": [
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:15"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--01:0"
+     ]
+    },
+    {
+     "query": "Q04",
+     "type": "编码",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      2
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1171,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:9"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:27"
+     ]
+    },
+    {
+     "query": "Q05",
+     "type": "相似型号",
+     "hit1": 0,
+     "recall": 0.0,
+     "full": 0,
+     "context_recall": 0.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      14
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1037,
+     "context_ids": [
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:22",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:16"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:22",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4--02:14"
+     ]
+    },
+    {
+     "query": "Q06",
+     "type": "兼容条件",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      1
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1188,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18",
+      "B:oppo-enco-air4-pro--03:32"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18"
+     ]
+    },
+    {
+     "query": "Q07",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1188,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18",
+      "B:oppo-enco-air4-pro--03:32"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18"
+     ]
+    },
+    {
+     "query": "Q08",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1198,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:28",
+      "B:oppo-enco-air4-pro--03:11"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:28"
+     ]
+    },
+    {
+     "query": "Q09",
+     "type": "编码",
+     "hit1": 1,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 0.5,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      16,
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1097,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:1",
+      "B:oppo-enco-air4-pro--03:18"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:27"
+     ]
+    },
+    {
+     "query": "Q10",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1172,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:25",
+      "B:oppo-enco-air4-pro--03:26",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:1",
+      "B:oppo-enco-air4-pro--03:0",
+      "B:oppo-enco-air4-pro--03:28",
+      "B:oppo-enco-air4-pro--03:12",
+      "B:oppo-enco-air4-pro--03:2"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:25",
+      "B:oppo-enco-air4-pro--03:26",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:1",
+      "B:oppo-enco-air4-pro--03:0"
+     ]
+    },
+    {
+     "query": "Q11",
+     "type": "脚注定位",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      3
+     ],
+     "context_chunks": 9,
+     "context_tokens": 1180,
+     "context_ids": [
+      "B:oppo-enco-air4--02:20",
+      "B:oppo-enco-air4--02:0",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:15",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:16",
+      "B:oppo-enco-air4--02:1",
+      "B:oppo-enco-air4--02:4"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:20",
+      "B:oppo-enco-air4--02:0",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:15",
+      "B:oppo-enco-air4--02:17"
+     ]
+    },
+    {
+     "query": "Q12",
+     "type": "指标口径",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1097,
+     "context_ids": [
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4",
+      "B:huawei-freebuds-6i--01:19"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    },
+    {
+     "query": "Q13",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1178,
+     "context_ids": [
+      "B:huawei-freebuds-6i--01:19",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:4",
+      "B:huawei-freebuds-6i--01:9",
+      "B:huawei-freebuds-6i--01:6"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:19",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    },
+    {
+     "query": "Q14",
+     "type": "相似型号",
+     "hit1": 0,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      2,
+      6
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1045,
+     "context_ids": [
+      "B:oneplus-buds-3--02:5",
+      "B:oneplus-buds-3--01:2",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:22",
+      "B:oneplus-buds-3--02:9",
+      "B:oneplus-buds-3--01:1",
+      "B:oneplus-buds-3--02:10",
+      "B:oneplus-buds-3--02:15"
+     ],
+     "context_products": [
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:oneplus-buds-3--02:5",
+      "B:oneplus-buds-3--01:2",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:22",
+      "B:oneplus-buds-3--02:9"
+     ]
+    },
+    {
+     "query": "Q15",
+     "type": "指标口径",
+     "hit1": 1,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      7
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1163,
+     "context_ids": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4",
+      "B:huawei-freebuds-6i--01:9",
+      "B:oneplus-buds-3--01:1"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i",
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    },
+    {
+     "query": "RAG-02",
+     "type": "主问题",
+     "hit1": 1,
+     "recall": 0.75,
+     "full": 0,
+     "context_recall": 0.75,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      30,
+      3,
+      1,
+      1
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1111,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:9",
+      "B:oppo-enco-air4--02:13"
+     ],
+     "context_products": [
+      "oppo-enco-air4",
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:9"
+     ]
+    },
+    {
+     "query": "RAG-05",
+     "type": "主问题",
+     "hit1": 1,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 0.5,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      14
+     ],
+     "context_chunks": 6,
+     "context_tokens": 1086,
+     "context_ids": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4",
+      "B:oneplus-buds-3--02:8"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i",
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "B+均衡",
+   "status": "ok",
+   "chunks": 305,
+   "rows": [
+    {
+     "query": "Q01",
+     "type": "型号识别",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 9,
+     "context_tokens": 1091,
+     "context_ids": [
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--01:3",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--01:2",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:5",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:19"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--01:3",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--01:2"
+     ]
+    },
+    {
+     "query": "Q02",
+     "type": "型号识别",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1135,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--02:0",
+      "B:oppo-enco-air4-pro--02:4",
+      "B:oppo-enco-air4-pro--03:9",
+      "B:oppo-enco-air4-pro--03:24",
+      "B:oppo-enco-air4-pro--03:0",
+      "B:oppo-enco-air4-pro--02:2",
+      "B:oppo-enco-air4-pro--03:1"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--02:0",
+      "B:oppo-enco-air4-pro--01:0",
+      "B:oppo-enco-air4-pro--02:4"
+     ]
+    },
+    {
+     "query": "Q03",
+     "type": "编码",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      5
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1045,
+     "context_ids": [
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--02:3",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:15"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--01:0"
+     ]
+    },
+    {
+     "query": "Q04",
+     "type": "编码",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      2
+     ],
+     "context_chunks": 5,
+     "context_tokens": 1067,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:9",
+      "B:oppo-enco-air4-pro--03:16"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:27"
+     ]
+    },
+    {
+     "query": "Q05",
+     "type": "相似型号",
+     "hit1": 0,
+     "recall": 0.0,
+     "full": 0,
+     "context_recall": 0.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      14
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1037,
+     "context_ids": [
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:22",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:7",
+      "B:oppo-enco-air4--02:16"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:22",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4--02:14"
+     ]
+    },
+    {
+     "query": "Q06",
+     "type": "兼容条件",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1083,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:18",
+      "B:oppo-enco-air4-pro--03:32",
+      "B:oppo-enco-air4-pro--03:31",
+      "B:oppo-enco-air4-pro--03:15"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18"
+     ]
+    },
+    {
+     "query": "Q07",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1098,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:18",
+      "B:oppo-enco-air4-pro--03:32",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:22"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:18"
+     ]
+    },
+    {
+     "query": "Q08",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1175,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--03:28",
+      "B:oppo-enco-air4-pro--03:11",
+      "B:oppo-enco-air4-pro--03:31",
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--02:4"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4-pro--03:28"
+     ]
+    },
+    {
+     "query": "Q09",
+     "type": "编码",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      5,
+      2
+     ],
+     "context_chunks": 6,
+     "context_tokens": 871,
+     "context_ids": [
+      "B:oppo-enco-air4--01:0",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4--02:10",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:15",
+      "B:oppo-enco-air4-pro--03:4"
+     ],
+     "context_products": [
+      "oppo-enco-air4",
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4--02:10",
+      "B:oppo-enco-air4-pro--01:1",
+      "B:oppo-enco-air4--01:0"
+     ]
+    },
+    {
+     "query": "Q10",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1134,
+     "context_ids": [
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:25",
+      "B:oppo-enco-air4-pro--03:26",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:1",
+      "B:oppo-enco-air4-pro--03:0",
+      "B:oppo-enco-air4-pro--03:28",
+      "B:oppo-enco-air4-pro--03:12"
+     ],
+     "context_products": [
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4-pro--03:25",
+      "B:oppo-enco-air4-pro--03:26",
+      "B:oppo-enco-air4-pro--03:4",
+      "B:oppo-enco-air4-pro--03:1",
+      "B:oppo-enco-air4-pro--03:0"
+     ]
+    },
+    {
+     "query": "Q11",
+     "type": "脚注定位",
+     "hit1": 0,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      3
+     ],
+     "context_chunks": 9,
+     "context_tokens": 1143,
+     "context_ids": [
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:20",
+      "B:oppo-enco-air4--02:0",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:15",
+      "B:oppo-enco-air4--02:17",
+      "B:oppo-enco-air4--02:14",
+      "B:oppo-enco-air4--02:16",
+      "B:oppo-enco-air4--02:1"
+     ],
+     "context_products": [
+      "oppo-enco-air4"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:20",
+      "B:oppo-enco-air4--02:0",
+      "B:oppo-enco-air4--02:12",
+      "B:oppo-enco-air4--02:15",
+      "B:oppo-enco-air4--02:17"
+     ]
+    },
+    {
+     "query": "Q12",
+     "type": "指标口径",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1178,
+     "context_ids": [
+      "B:huawei-freebuds-6i--02:5",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4",
+      "B:huawei-freebuds-6i--01:9"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    },
+    {
+     "query": "Q13",
+     "type": "脚注定位",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1086,
+     "context_ids": [
+      "B:huawei-freebuds-6i--02:5",
+      "B:huawei-freebuds-6i--01:19",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:4",
+      "B:huawei-freebuds-6i--01:9"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:19",
+      "B:huawei-freebuds-6i--01:5",
+      "B:huawei-freebuds-6i--01:17",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:4"
+     ]
+    },
+    {
+     "query": "Q14",
+     "type": "相似型号",
+     "hit1": 0,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      2,
+      6
+     ],
+     "context_chunks": 8,
+     "context_tokens": 1082,
+     "context_ids": [
+      "B:oneplus-buds-3--01:2",
+      "B:oneplus-buds-3--02:5",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:22",
+      "B:oneplus-buds-3--02:9",
+      "B:oneplus-buds-3--01:1",
+      "B:oneplus-buds-3--02:15",
+      "B:oneplus-buds-3--01:3"
+     ],
+     "context_products": [
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:oneplus-buds-3--02:5",
+      "B:oneplus-buds-3--01:2",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:22",
+      "B:oneplus-buds-3--02:9"
+     ]
+    },
+    {
+     "query": "Q15",
+     "type": "指标口径",
+     "hit1": 1,
+     "recall": 1.0,
+     "full": 1,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      2
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1050,
+     "context_ids": [
+      "B:huawei-freebuds-6i--02:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:oneplus-buds-3--01:1",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:10",
+      "B:oneplus-buds-3--02:2"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i",
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:oneplus-buds-3--01:1",
+      "B:huawei-freebuds-6i--01:3",
+      "B:oneplus-buds-3--02:8",
+      "B:huawei-freebuds-6i--01:17"
+     ]
+    },
+    {
+     "query": "RAG-02",
+     "type": "主问题",
+     "hit1": 0,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 0.75,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      19,
+      6,
+      2,
+      2
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1069,
+     "context_ids": [
+      "B:oppo-enco-air4--01:1",
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4--02:19",
+      "B:oppo-enco-air4-pro--02:1",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4-pro--03:8"
+     ],
+     "context_products": [
+      "oppo-enco-air4",
+      "oppo-enco-air4-pro"
+     ],
+     "top5": [
+      "B:oppo-enco-air4--02:13",
+      "B:oppo-enco-air4-pro--03:27",
+      "B:oppo-enco-air4--02:4",
+      "B:oppo-enco-air4-pro--03:8",
+      "B:oppo-enco-air4--02:19"
+     ]
+    },
+    {
+     "query": "RAG-05",
+     "type": "主问题",
+     "hit1": 1,
+     "recall": 0.5,
+     "full": 0,
+     "context_recall": 1.0,
+     "wrong_product": 0,
+     "top1_wrong": 0,
+     "first_ranks": [
+      1,
+      8
+     ],
+     "context_chunks": 7,
+     "context_tokens": 1096,
+     "context_ids": [
+      "B:huawei-freebuds-6i--02:3",
+      "B:huawei-freebuds-6i--01:2",
+      "B:huawei-freebuds-6i--01:3",
+      "B:oneplus-buds-3--01:1",
+      "B:oneplus-buds-3--02:8",
+      "B:oneplus-buds-3--02:9",
+      "B:oneplus-buds-3--02:11"
+     ],
+     "context_products": [
+      "huawei-freebuds-6i",
+      "oneplus-buds-3"
+     ],
+     "top5": [
+      "B:huawei-freebuds-6i--01:2",
+      "B:oneplus-buds-3--02:8",
+      "B:huawei-freebuds-6i--01:3",
+      "B:oneplus-buds-3--02:9",
+      "B:huawei-freebuds-6i--01:17"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "B+规格+均衡",
+   "status": "未运行：缺少 84 段片段向量（先运行 .venv/bin/python -m src.evidence --build，约 2 次 Embedding 调用）",
+   "chunks": 361
+  }
+ ]
+}
