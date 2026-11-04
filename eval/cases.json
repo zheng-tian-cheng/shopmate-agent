@@ -1,0 +1,58 @@
+{
+  "about": "ShopMate B0/B1/B2 评测题目。原句逐字取自 docs/ShopMate_Eval_总览_V0.2_易读版.md（Agent 题、T01）和 docs/ShopMate_RAG_Eval_V0.1.md 第一节（商品问答题），由 tests/test_eval_harness.py 检查一致；改题须先改文档。所有版本使用同一份文件。",
+  "start": {
+    "about": "复现前端从首页打开助手：未选品类、无条件、不在详情页；历史里有一条开场白（frontend/lib/session.ts 的 openingText）。每道单项题和 T01 都从这里开始。",
+    "state": {"schemaVersion": 1, "category": null, "conditions": [], "dismissed": []},
+    "viewedProductId": null,
+    "history": [
+      {"role": "assistant", "text": "嗨，我是 ShopMate。今天想买点什么？目前可以完整体验蓝牙耳机选购，其他品类还在准备中。", "productRefs": [], "viewedProductId": null}
+    ]
+  },
+  "agent": [
+    {"id": "A01", "text": "我想买200元以上的耳机", "focus": "不能把价格下限误解成上限；不支持时说明"},
+    {"id": "A02", "text": "想买耳机，酷炫舒适的200元以上好放松", "focus": "复杂表达下仍保留价格下限、正确处理模糊偏好",
+     "reviewNote": "“酷炫、舒适、放松”是需要理解的主观需求：可以解释、追问或记作使用场景，但不能说成已经按它们筛选或排序，也不能假装转成了有效筛选条件。"},
+    {"id": "A03", "text": "300元以内的睡眠耳机", "focus": "理解睡眠用途，必要时区分睡前听歌与睡着佩戴"}
+  ],
+  "qa": [
+    {"id": "RAG-01", "products": ["sony-wh-ch720n"], "text": "我想买 WH-CH720N，平时插线听电脑。插线以后还能开降噪吗？关机能听吗，耳机上的音量键还管用吗？"},
+    {"id": "RAG-02", "products": ["oppo-enco-air4", "oppo-enco-air4-pro"], "text": "Enco Air4 和 Air4 Pro，我主要想听高音质音乐。加钱买 Pro 就能用 LHDC 吗？我用的是安卓手机。"},
+    {"id": "RAG-03", "products": ["huawei-freebuds-6i"], "text": "我想买 FreeBuds 6i，通勤加自习要连续听四小时，而且想开降噪和 LDAC。官网说五小时，我能放心按这个算吗？"},
+    {"id": "RAG-04", "products": ["redmi-buds-6"], "text": "我看 Redmi Buds 6 的评测，有人说降噪不错，也有人说降噪是短板。我每天坐公交，该怎么理解，值得考虑吗？"},
+    {"id": "RAG-05", "products": ["huawei-freebuds-6i", "oneplus-buds-3"], "text": "华为 FreeBuds 6i 写的是 27dB，一加 Buds 3 写的是 49dB，是不是一加的降噪强很多？"}
+  ],
+  "task": {
+    "id": "T01",
+    "steps": [
+      "500 元以内，主要坐公交，希望降噪好、戴久舒服。",
+      "按这些要求推荐几款，告诉我原因。",
+      "现在我更看重续航，再比较一下。",
+      "比较刚才推荐的前两款，你建议我怎么选？如果不足两款，请说明原因。"
+    ],
+    "user": {
+      "about": "模拟一位正常购物的用户：预算 500 元以内必须满足；主要坐公交；希望降噪好但没说必须；想戴久舒服；第三步起更看重续航；用安卓手机。每次助手回复后按以下顺序处理，规则在测试前固定，所有版本相同。",
+      "rule1_suggestions": {
+        "about": "界面上的系统建议：按下表点击（设为必须 / 作为偏好 / 采纳），表里没有的点“不需要”。和前端按钮的文案、操作一致。",
+        "choices": [
+          {"field": "budget", "value": 500, "choose": "hard", "why": "用户说的是 500 元以内"},
+          {"field": "anc", "value": true, "choose": "soft", "why": "用户说“希望降噪好”，没说必须"},
+          {"field": "scene", "contains": ["公交", "通勤"], "choose": "confirm", "why": "用户主要坐公交"}
+        ]
+      },
+      "rule2_pending": "界面上的待确认问题：选和 rule1 相符的选项（同一条件优先选相同的必须/偏好类型）；没有相符的选项就不选，保持待确认。",
+      "rule3_questions": {
+        "about": "本轮没有界面操作、没有给出推荐或比较，且回复里有问句时，用户回答一次（每个步骤最多一次）。按问句里的关键词拼接下列回答；都不匹配时用 fallback。",
+        "answers": [
+          {"keywords": ["品类", "买什么", "哪类", "什么商品", "什么产品"], "answer": "想买蓝牙耳机。"},
+          {"keywords": ["预算", "价格", "多少钱"], "answer": "预算 500 元以内。"},
+          {"keywords": ["降噪", "噪音", "嘈杂", "吵"], "answer": "公交上比较吵，希望降噪明显一些。"},
+          {"keywords": ["佩戴", "舒适", "舒服", "久戴", "耳道", "入耳", "头戴", "压耳"], "answer": "能连续戴几个小时不难受就行，佩戴方式没有特别要求。"},
+          {"keywords": ["续航", "电池", "充电"], "answer": "单次续航越长越好，其他按原来的要求。"},
+          {"keywords": ["手机", "安卓", "苹果", "iPhone", "系统"], "answer": "我用的是安卓手机。"}
+        ],
+        "fallback": "可以，就按我刚才说的要求来。"
+      },
+      "rule4_failures": "产品运行失败（非环境/API 故障）时，像用户点“重试”一样把同一句再发一次；仍失败就继续下一步。失败的一问一答和前端一样不进入历史。"
+    }
+  }
+}
