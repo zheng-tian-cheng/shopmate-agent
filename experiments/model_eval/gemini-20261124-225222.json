@@ -1,0 +1,186 @@
+{
+  "summary": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "total": 10,
+    "passed": 5,
+    "errors": 5,
+    "accuracy": 0.5,
+    "avg_latency": 4.221128025138751
+  },
+  "results": [
+    {
+      "id": "T01",
+      "question": "300元以内的耳机",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          300.0
+        ]
+      },
+      "raw": "{\n  \"type\": \"upper\",\n  \"amounts\": [\n    300.0\n  ]\n}",
+      "status": "PASS",
+      "latency": 4.12800379213877,
+      "error": null
+    },
+    {
+      "id": "T02",
+      "question": "500元以上的耳机",
+      "expected": {
+        "type": "lower",
+        "amounts": [
+          500
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 5.79910883307457,
+      "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "id": "T03",
+      "question": "200到400元的耳机",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          200,
+          400
+        ]
+      },
+      "actual": {
+        "type": "range",
+        "amounts": [
+          200.0,
+          400.0
+        ]
+      },
+      "raw": "{\n  \"type\": \"range\",\n  \"amounts\": [\n    200,\n    400\n  ]\n}",
+      "status": "PASS",
+      "latency": 3.1006556251086295,
+      "error": null
+    },
+    {
+      "id": "T04",
+      "question": "300元左右的耳机",
+      "expected": {
+        "type": "approx",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 20.006765000056475,
+      "error": ""
+    },
+    {
+      "id": "T05",
+      "question": "推荐一款降噪耳机",
+      "expected": {
+        "type": "none",
+        "amounts": []
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 2.501981875160709,
+      "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "id": "T06",
+      "question": "预算不要超过一千元",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          1000
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          1000.0
+        ]
+      },
+      "raw": "{\"type\": \"upper\", \"amounts\": [1000]}",
+      "status": "PASS",
+      "latency": 1.4914177919272333,
+      "error": null
+    },
+    {
+      "id": "T07",
+      "question": "两三百块钱的耳机",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          200,
+          300
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 1.6391505829524249,
+      "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "id": "T08",
+      "question": "至少150元，最多350元",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          150,
+          350
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 1.6300150000024587,
+      "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "id": "T09",
+      "question": "预算从500元降低到300元以内",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          300.0
+        ]
+      },
+      "raw": "{\"type\": \"upper\", \"amounts\": [300]}",
+      "status": "PASS",
+      "latency": 0.9887772090733051,
+      "error": null
+    },
+    {
+      "id": "T10",
+      "question": "推荐蓝牙5.3的耳机",
+      "expected": {
+        "type": "none",
+        "amounts": []
+      },
+      "actual": {
+        "type": "none",
+        "amounts": []
+      },
+      "raw": "{\"type\": \"none\", \"amounts\": []}",
+      "status": "PASS",
+      "latency": 0.9254045418929309,
+      "error": null
+    }
+  ]
+}

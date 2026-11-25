@@ -1,0 +1,28 @@
+{
+  "summary": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "total": 1,
+    "passed": 0,
+    "errors": 1,
+    "accuracy": 0.0,
+    "avg_latency": 5.143469166941941
+  },
+  "results": [
+    {
+      "id": "T04",
+      "question": "300元左右的耳机",
+      "expected": {
+        "type": "approx",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 5.143469166941941,
+      "error": ""
+    }
+  ]
+}

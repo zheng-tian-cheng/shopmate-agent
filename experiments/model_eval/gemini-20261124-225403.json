@@ -1,0 +1,108 @@
+{
+  "summary": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "total": 5,
+    "passed": 4,
+    "errors": 1,
+    "accuracy": 0.8,
+    "avg_latency": 1.6763363083824516
+  },
+  "results": [
+    {
+      "id": "T02",
+      "question": "500元以上的耳机",
+      "expected": {
+        "type": "lower",
+        "amounts": [
+          500
+        ]
+      },
+      "actual": {
+        "type": "lower",
+        "amounts": [
+          500.0
+        ]
+      },
+      "raw": "{\"type\": \"lower\", \"amounts\": [500]}",
+      "status": "PASS",
+      "latency": 2.415029666852206,
+      "error": null
+    },
+    {
+      "id": "T04",
+      "question": "300元左右的耳机",
+      "expected": {
+        "type": "approx",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": null,
+      "raw": null,
+      "status": "ERROR",
+      "latency": 1.2546756248921156,
+      "error": "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "id": "T05",
+      "question": "推荐一款降噪耳机",
+      "expected": {
+        "type": "none",
+        "amounts": []
+      },
+      "actual": {
+        "type": "none",
+        "amounts": []
+      },
+      "raw": "{\n  \"type\": \"none\",\n  \"amounts\": []\n}",
+      "status": "PASS",
+      "latency": 1.5581950421910733,
+      "error": null
+    },
+    {
+      "id": "T07",
+      "question": "两三百块钱的耳机",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          200,
+          300
+        ]
+      },
+      "actual": {
+        "type": "range",
+        "amounts": [
+          200.0,
+          300.0
+        ]
+      },
+      "raw": "{\"type\": \"range\", \"amounts\": [200, 300]}",
+      "status": "PASS",
+      "latency": 2.036488207988441,
+      "error": null
+    },
+    {
+      "id": "T08",
+      "question": "至少150元，最多350元",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          150,
+          350
+        ]
+      },
+      "actual": {
+        "type": "range",
+        "amounts": [
+          150.0,
+          350.0
+        ]
+      },
+      "raw": "{\n  \"type\": \"range\",\n  \"amounts\": [\n    150,\n    350\n  ]\n}",
+      "status": "PASS",
+      "latency": 1.1172929999884218,
+      "error": null
+    }
+  ]
+}

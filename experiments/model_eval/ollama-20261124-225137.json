@@ -1,0 +1,212 @@
+{
+  "summary": {
+    "provider": "ollama",
+    "model": "qwen3:1.7b",
+    "total": 10,
+    "passed": 5,
+    "errors": 0,
+    "accuracy": 0.5,
+    "avg_latency": 0.7064471709076315
+  },
+  "results": [
+    {
+      "id": "T01",
+      "question": "300元以内的耳机",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          300.0
+        ]
+      },
+      "raw": "{\"type\":\"upper\",\"amounts\":[300]}",
+      "status": "PASS",
+      "latency": 2.5852108341641724,
+      "error": null
+    },
+    {
+      "id": "T02",
+      "question": "500元以上的耳机",
+      "expected": {
+        "type": "lower",
+        "amounts": [
+          500
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          500.0
+        ]
+      },
+      "raw": "{\"type\":\"upper\",\"amounts\":[500]}",
+      "status": "FAIL",
+      "latency": 0.4672794158104807,
+      "error": null
+    },
+    {
+      "id": "T03",
+      "question": "200到400元的耳机",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          200,
+          400
+        ]
+      },
+      "actual": {
+        "type": "range",
+        "amounts": [
+          200.0,
+          300.0,
+          400.0
+        ]
+      },
+      "raw": "{\"type\":\"range\",\"amounts\":[200,300,400]}",
+      "status": "FAIL",
+      "latency": 0.7032182500697672,
+      "error": null
+    },
+    {
+      "id": "T04",
+      "question": "300元左右的耳机",
+      "expected": {
+        "type": "approx",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          300.0
+        ]
+      },
+      "raw": "{\"type\":\"upper\",\"amounts\":[300]}",
+      "status": "FAIL",
+      "latency": 0.4390577911399305,
+      "error": null
+    },
+    {
+      "id": "T05",
+      "question": "推荐一款降噪耳机",
+      "expected": {
+        "type": "none",
+        "amounts": []
+      },
+      "actual": {
+        "type": "none",
+        "amounts": []
+      },
+      "raw": "{\"type\":\"none\",\"amounts\":[] }",
+      "status": "PASS",
+      "latency": 0.42052345909178257,
+      "error": null
+    },
+    {
+      "id": "T06",
+      "question": "预算不要超过一千元",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          1000
+        ]
+      },
+      "actual": {
+        "type": "upper",
+        "amounts": [
+          1000.0
+        ]
+      },
+      "raw": "{\"type\":\"upper\",\"amounts\":[1000]}",
+      "status": "PASS",
+      "latency": 0.4622911252081394,
+      "error": null
+    },
+    {
+      "id": "T07",
+      "question": "两三百块钱的耳机",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          200,
+          300
+        ]
+      },
+      "actual": {
+        "type": "lower",
+        "amounts": [
+          230.0
+        ]
+      },
+      "raw": "{\"type\":\"lower\",\"amounts\":[230]}",
+      "status": "FAIL",
+      "latency": 0.4758968339301646,
+      "error": null
+    },
+    {
+      "id": "T08",
+      "question": "至少150元，最多350元",
+      "expected": {
+        "type": "range",
+        "amounts": [
+          150,
+          350
+        ]
+      },
+      "actual": {
+        "type": "range",
+        "amounts": [
+          150.0,
+          350.0
+        ]
+      },
+      "raw": "{\"type\":\"range\",\"amounts\":[150,350]}",
+      "status": "PASS",
+      "latency": 0.5783291668631136,
+      "error": null
+    },
+    {
+      "id": "T09",
+      "question": "预算从500元降低到300元以内",
+      "expected": {
+        "type": "upper",
+        "amounts": [
+          300
+        ]
+      },
+      "actual": {
+        "type": "lower",
+        "amounts": [
+          500.0,
+          300.0
+        ]
+      },
+      "raw": "{\"type\":\"lower\",\"amounts\":[500,300]}",
+      "status": "FAIL",
+      "latency": 0.5723931659013033,
+      "error": null
+    },
+    {
+      "id": "T10",
+      "question": "推荐蓝牙5.3的耳机",
+      "expected": {
+        "type": "none",
+        "amounts": []
+      },
+      "actual": {
+        "type": "none",
+        "amounts": []
+      },
+      "raw": "{\"type\":\"none\",\"amounts\":[] }",
+      "status": "PASS",
+      "latency": 0.3602716668974608,
+      "error": null
+    }
+  ]
+}

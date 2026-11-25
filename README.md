@@ -53,6 +53,95 @@
 
 *商品证据问答局部截图：回答中标注引用编号，下方可展开查看官网依据来源。*
 
+## 本地模型适配与部署
+
+为探索轻量级大模型在有限硬件资源下的应用可行性，项目增加了基于 Ollama 的 Qwen 本地模型适配器，支持通过环境变量切换 Gemini 与本地模型。
+
+- **多模型适配：** 保留 Gemini 作为默认模型，通过统一适配层接入 Ollama HTTP API，复用现有 Agent 工具与业务校验机制。
+- **小模型能力适配：** 针对复杂 Function Calling 中出现的参数格式错误、重复调用及任务终止失败，开展 Prompt 简化、动态工具选择、参数标准化与 Structured Output 实验。
+- **结构化需求解析：** 通过 JSON Schema 约束模型输出，由 Python 后端负责参数构建、Pydantic 校验和确定性商品筛选。
+- **容器化部署：** 使用 Docker 构建 Linux ARM64 后端镜像，验证 FastAPI 服务、端口映射及容器与宿主机 Ollama 服务的通信。
+
+部署架构：
+
+```mermaid
+flowchart LR
+    A[Next.js 前端] --> B[Docker / FastAPI 后端]
+    B --> C[Gemini API]
+    B --> D[Ollama / Qwen]
+    B --> E[商品数据与规则引擎]
+    B --> F[RAG 证据检索]
+```
+
+在 Apple M1、8GB 统一内存环境下，已验证容器内的结构化预算解析与商品筛选流程：正确提取 300 元预算上限，从 15 款商品中筛选出 9 款符合条件的候选商品。
+
+原有 Agent 回归测试通过 54 项。结构化输出工作流目前为独立实验，尚未集成至正式聊天接口；本地小模型的完整自主工具调用仍存在稳定性问题。RAG Embedding 仍依赖 Gemini API，系统尚未实现完全离线化。
+
+## 模型选型与推理性能评测
+
+为比较模型规模、量化精度及部署方式对业务能力的影响，建立包含 10 道预算理解题的固定测试集，覆盖预算上下限、价格区间、软性偏好、口语数字和条件变更等场景。
+
+本地模型统一使用相同的 Prompt、JSON Schema、评分规则及推理配置。
+
+| 模型 | 量化方案 | 正确题数 | 整体成功率 | 平均请求延迟 |
+| --- | --- | ---: | ---: | ---: |
+| Qwen3 1.7B | Q4_K_M | 5/10 | 50% | 0.706s |
+| Qwen3 4B | Q4_K_M | 7/10 | 70% | 3.403s |
+| Qwen3 1.7B | Q8_0 | 7/10 | 70% | 1.411s |
+| Gemini 3.5 Flash-Lite | 未知 | 9/10 | 90% | 4.221s（首轮） |
+
+初步实验发现：
+
+- **模型规模对比：** 在相同 Q4_K_M 量化方案下，4B 模型相比 1.7B 模型的准确率提高 20 个百分点，但响应延迟增加。
+- **量化精度对比：** 1.7B Q8 模型在本次测试中达到与 4B Q4 模型相同的准确率，平均响应延迟更低。
+- **格式与语义准确性：** 三组本地模型均通过 JSON 格式校验，但仍存在预算方向、口语数字及条件变更理解错误。
+- **服务可用性：** 本地模型均成功返回 10 道题的结果；Gemini 存在服务异常及超时，经过重试后获得 9 个正确答案，剩余 1 题未完成。
+
+综合当前实验结果，1.7B Q8 是值得进一步验证的轻量级候选方案，但尚不足以直接替代正式购物助手中的云端模型。
+
+实验局限：测试样本较少，延迟包含首次请求的潜在加载开销，尚未严格控制硬件资源压力。不同规模模型也可能存在架构与训练差异，因此结果仅作为初步业务选型依据。
+
+评测脚本及原始结果：
+
+- [模型预算解析评测](experiments/model_budget_eval.py)
+- [结构化预算筛选实验](experiments/ollama_budget_demo.py)
+- [模型评测原始记录](experiments/model_eval/)
+
+### Docker 后端部署
+
+在已安装 Docker Desktop 与 Ollama 的 macOS 环境中：
+
+```bash
+ollama pull qwen3:1.7b
+
+docker build -t shopmate-backend:v1 .
+
+docker run -d \
+  --name shopmate-backend \
+  -p 127.0.0.1:8001:8000 \
+  -e LLM_PROVIDER=ollama \
+  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
+  shopmate-backend:v1
+```
+
+API 文档：http://localhost:8001/docs
+
+验证容器内的结构化预算筛选：
+
+```bash
+docker exec -i shopmate-backend python - \
+  < experiments/ollama_budget_demo.py
+```
+
+复现本地模型评测：
+
+```bash
+LLM_PROVIDER=ollama OLLAMA_MODEL=qwen3:1.7b \
+.venv/bin/python -m experiments.model_budget_eval
+```
+
+以上 Docker 配置用于本地部署实验，仅容器化后端，前端和 Ollama 独立运行。
+
 ## 本地体验
 
 需要 Python 3.11+、Node.js 22.18+ 及 Gemini API Key。
