@@ -1,0 +1,14 @@
+.git
+.venv
+.env
+.env.*
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.DS_Store
+frontend
+experiments
+eval
+docs
+decisions
+tests
