@@ -83,7 +83,7 @@
 
 以上为小规模业务测试，平均延迟包含首次请求的潜在模型加载开销，结果仅作为初步模型选型依据。
 
-[评测脚本](experiments/model_budget_eval.py) · [原始实验记录](experiments/model_eval/) · [结构化输出实验](experiments/ollama_budget_demo.py)
+[评测脚本](experiments/model_eval/run.py) · [原始实验记录](experiments/model_eval/results/) · [结构化输出实验](experiments/model_eval/budget_demo.py)
 
 ### Docker 后端部署
 
@@ -108,14 +108,14 @@ API 文档：http://localhost:8001/docs
 
 ```bash
 docker exec -i shopmate-backend python - \
-  < experiments/ollama_budget_demo.py
+  < experiments/model_eval/budget_demo.py
 ```
 
 复现本地模型评测：
 
 ```bash
 LLM_PROVIDER=ollama OLLAMA_MODEL=qwen3:1.7b \
-.venv/bin/python -m experiments.model_budget_eval
+.venv/bin/python -m experiments.model_eval.run
 ```
 
 以上 Docker 配置用于本地部署实验，仅容器化后端，前端和 Ollama 独立运行。

@@ -178,7 +178,7 @@ async def main():
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 
         path = Path(
-            f"experiments/model_eval/{provider}-{timestamp}.json"
+            f"experiments/model_eval/results/{provider}-{timestamp}.json"
         )
 
         path.write_text(
