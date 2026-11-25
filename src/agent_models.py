@@ -83,7 +83,7 @@ class ChatResponse(Model):
     compareIds: list[str] | None = None
     tools: list[ToolStatus]
     evidence: list[EvidenceRef] | None = None
-    mode: Literal['gemini'] = 'gemini'
+    mode: Literal['gemini', 'ollama'] = 'gemini'
 
 
 class ChatFailure(Model):

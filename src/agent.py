@@ -123,7 +123,18 @@ class GeminiModel:
 
 
 def get_model():
-    return GeminiModel()
+    provider = os.getenv('LLM_PROVIDER', 'gemini').strip().lower()
+
+    if provider == 'ollama':
+        from .ollama_model import OllamaModel
+        return OllamaModel(tool_declarations())
+
+    if provider == 'gemini':
+        return GeminiModel()
+
+    raise ChatError(
+        'NOT_CONFIGURED', '不支持的模型供应商', 503, False
+    )
 
 
 def public_product(p):
@@ -355,7 +366,7 @@ async def run_agent(request: ChatRequest, model):
         return ChatResponse.model_validate(dict(reply=reply, state=state, applied=applied, rejected=rejected,
             recommendations=[dict(productId=i, softMatched=soft[i]) for i in picks] if matches is not None else None,
             matchCount=len(matches) if matches is not None else None, productRefs=refs,
-            compareIds=comparison, tools=statuses + ([dict(name=tool, status='ok')] if tool else []), mode='gemini',
+            compareIds=comparison, tools=statuses + ([dict(name=tool, status='ok')] if tool else []), mode=getattr(model, 'provider', 'gemini'),
             **({'evidence': [dict(ref=e['ref'], productId=e['product_id'], sourceId=e['source_id'], source=e['source'], region=e['region'],
                                   position=e['position'], url=e.get('url')) for e in evidence if e['ref'] in cited]} if evidence else {})))
 
